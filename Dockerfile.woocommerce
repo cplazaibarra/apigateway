@@ -1,0 +1,20 @@
+# Stage 1: Build WooCommerce store binary
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum* ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bin/woocommerce-store ./cmd/woocommerce_store
+
+# Stage 2: Minimal runtime image
+FROM alpine:3.19
+
+RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /app
+
+COPY --from=builder /app/bin/woocommerce-store /app/woocommerce-store
+
+EXPOSE 8080
+ENTRYPOINT ["/app/woocommerce-store"]

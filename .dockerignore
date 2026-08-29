@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+bin/
+dist/
+tmp/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+*.log

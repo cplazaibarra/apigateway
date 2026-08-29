@@ -1,0 +1,122 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: order-hub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-order_hub}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d order_hub"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - order-hub-net
+
+  woocomerce-tienda1:
+    build:
+      context: .
+      dockerfile: Dockerfile.woocommerce
+    container_name: woocomerce-tienda1
+    restart: unless-stopped
+    environment:
+      STORE_ID: "tienda1"
+      STORE_NAME: "Tienda 1 - Moda & Calzado SpA"
+      CURRENCY: "CLP"
+      WC_KEY: "ck_tienda1_live_a8f93b"
+      WC_SECRET: "cs_tienda1_secret_99b1a"
+      PORT: "8080"
+    ports:
+      - "8081:8080"
+    networks:
+      - order-hub-net
+
+  woocomerce-tienda2:
+    build:
+      context: .
+      dockerfile: Dockerfile.woocommerce
+    container_name: woocomerce-tienda2
+    restart: unless-stopped
+    environment:
+      STORE_ID: "tienda2"
+      STORE_NAME: "Tienda 2 - Tecnología & Gadgets SpA"
+      CURRENCY: "CLP"
+      WC_KEY: "ck_tienda2_live_b7c21e"
+      WC_SECRET: "cs_tienda2_secret_44f8d"
+      PORT: "8080"
+    ports:
+      - "8083:8080"
+    networks:
+      - order-hub-net
+
+  order-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: order-hub-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      woocomerce-tienda1:
+        condition: service_started
+      woocomerce-tienda2:
+        condition: service_started
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/${POSTGRES_DB:-order_hub}?sslmode=disable"
+      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-for-order-integration-hub-2026}
+      ENVIRONMENT: production
+    ports:
+      - "8080:8080"
+    networks:
+      - order-hub-net
+
+  order-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: order-hub-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-api:
+        condition: service_started
+      woocomerce-tienda1:
+        condition: service_started
+      woocomerce-tienda2:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/${POSTGRES_DB:-order_hub}?sslmode=disable"
+      ENVIRONMENT: production
+    networks:
+      - order-hub-net
+
+  frontend-angular:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: order-hub-frontend
+    restart: unless-stopped
+    depends_on:
+      - order-api
+    ports:
+      - "80:80"
+      - "4200:80"
+    networks:
+      - order-hub-net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  order-hub-net:
+    driver: bridge
