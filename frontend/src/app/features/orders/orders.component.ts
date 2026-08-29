@@ -285,7 +285,56 @@ import { StandardizedOrderReport, Integration } from '../../core/models/types';
       </div>
     </div>
   `,
-  styles: []
+  styles: [`
+    .modal-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(15, 23, 42, 0.75) !important;
+      backdrop-filter: blur(6px) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 99999 !important;
+      padding: 1.5rem !important;
+    }
+    .modal-container {
+      background: #ffffff !important;
+      border-radius: 16px !important;
+      width: 100% !important;
+      max-width: 800px !important;
+      max-height: 88vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+      overflow: hidden !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    .modal-header {
+      padding: 1.25rem 1.5rem !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #f8fafc !important;
+    }
+    .modal-body {
+      padding: 1.5rem !important;
+      overflow-y: auto !important;
+      flex: 1 !important;
+      background: #ffffff !important;
+    }
+    .modal-footer {
+      padding: 1rem 1.5rem !important;
+      border-top: 1px solid #e2e8f0 !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 0.75rem !important;
+      background: #f8fafc !important;
+    }
+  `]
 })
 export class OrdersComponent implements OnInit {
   private api = inject(ApiService);
