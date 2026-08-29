@@ -198,82 +198,94 @@ import { StandardizedOrderReport, Integration } from '../../core/models/types';
       </div>
 
       <!-- ORDER DETAIL MODAL -->
-      <div *ngIf="selectedOrder" class="modal-backdrop">
-        <div class="modal max-w-2xl bg-white border border-slate-200 rounded-xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div *ngIf="selectedOrder" class="modal-overlay" (click)="selectedOrder = null">
+        <div class="modal-container max-w-3xl" (click)="$event.stopPropagation()">
+          <div class="modal-header">
             <div>
               <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <span>📦</span> Detalle del Pedido #{{ selectedOrder.order_number }}
               </h3>
               <div class="text-xs text-slate-500">{{ selectedOrder.integration_name }} ({{ selectedOrder.provider }})</div>
             </div>
-            <button (click)="selectedOrder = null" class="text-slate-400 hover:text-slate-600">✕</button>
+            <button (click)="selectedOrder = null" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors font-bold text-base">
+              ✕
+            </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 text-xs">
-            <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
-              <div class="text-[10px] font-bold text-slate-400 uppercase">Cliente & Contacto</div>
-              <div class="font-bold text-slate-800">{{ selectedOrder.customer_full_name }}</div>
-              <div class="text-slate-600">{{ selectedOrder.customer_email }}</div>
-              <div class="text-sky-600 font-semibold">{{ selectedOrder.customer_phone }}</div>
+          <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cliente & Contacto</div>
+                <div class="font-bold text-slate-800 text-sm">{{ selectedOrder.customer_full_name || 'Sin Nombre' }}</div>
+                <div class="text-slate-600">{{ selectedOrder.customer_email }}</div>
+                <div *ngIf="selectedOrder.customer_phone" class="text-sky-600 font-semibold flex items-center gap-1 mt-1">
+                  <span>📞</span> {{ selectedOrder.customer_phone }}
+                </div>
+              </div>
+
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dirección de Despacho</div>
+                <div class="font-bold text-slate-800">{{ selectedOrder.shipping_address || 'Sin dirección' }}</div>
+                <div class="text-amber-700 font-bold flex items-center gap-1">
+                  <span>📍</span> {{ selectedOrder.city || selectedOrder.commune }}
+                </div>
+                <div class="text-slate-700 pt-1 text-xs">
+                  Monto Total: <strong class="text-slate-900 font-mono text-sm"><span>$</span>{{ selectedOrder.total_amount | number }} {{ selectedOrder.currency }}</strong>
+                </div>
+              </div>
             </div>
 
-            <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1">
-              <div class="text-[10px] font-bold text-slate-400 uppercase">Dirección de Despacho</div>
-              <div class="font-bold text-slate-800">{{ selectedOrder.shipping_address }}</div>
-              <div class="text-amber-700 font-bold">{{ selectedOrder.city || selectedOrder.commune }}</div>
-              <div class="text-slate-500">Monto: <strong><span>$</span>{{ selectedOrder.total_amount | number }} {{ selectedOrder.currency }}</strong></div>
+            <!-- Items Table in Modal -->
+            <div class="space-y-2">
+              <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Ítems Normalizados ({{ selectedOrder.items ? selectedOrder.items.length : 0 }})
+              </div>
+              <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[10px] uppercase">
+                    <tr>
+                      <th class="p-2.5">SKU</th>
+                      <th class="p-2.5">Producto</th>
+                      <th class="p-2.5 text-center">Cantidad</th>
+                      <th class="p-2.5 text-right">Precio Unit.</th>
+                      <th class="p-2.5 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let itm of selectedOrder.items" class="hover:bg-slate-50/50">
+                      <td class="p-2.5 font-mono font-bold text-indigo-600 bg-indigo-50/50">{{ itm.sku }}</td>
+                      <td class="p-2.5 text-slate-700 font-medium">{{ itm.product_name }}</td>
+                      <td class="p-2.5 text-center font-mono font-bold text-slate-800">{{ itm.quantity }}</td>
+                      <td class="p-2.5 text-right font-mono text-slate-600"><span>$</span>{{ itm.unit_price | number }}</td>
+                      <td class="p-2.5 text-right font-mono font-bold text-slate-900"><span>$</span>{{ itm.total_amount | number }}</td>
+                    </tr>
+                    <tr *ngIf="!selectedOrder.items || selectedOrder.items.length === 0">
+                      <td colspan="5" class="p-4 text-center text-slate-400 italic">No hay ítems registrados</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Raw Payload Inspection -->
+            <div *ngIf="selectedOrder.raw_payload" class="space-y-2">
+              <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Payload Crudo de Origen (Raw JSON)</div>
+              <div class="bg-slate-950 text-emerald-400 p-3.5 rounded-xl font-mono text-[11px] max-h-48 overflow-y-auto border border-slate-800 shadow-inner">
+                <pre class="whitespace-pre-wrap">{{ formatJSON(selectedOrder.raw_payload) }}</pre>
+              </div>
             </div>
           </div>
 
-          <!-- Items Table in Modal -->
-          <div class="space-y-2">
-            <div class="text-xs font-bold text-slate-700 uppercase">Ítems Normalizados ({{ selectedOrder.items.length }})</div>
-            <div class="border border-slate-200 rounded-lg overflow-hidden">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[10px] uppercase">
-                  <tr>
-                    <th class="p-2">SKU</th>
-                    <th class="p-2">Producto</th>
-                    <th class="p-2 text-center">Cantidad</th>
-                    <th class="p-2 text-right">Precio Unit.</th>
-                    <th class="p-2 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr *ngFor="let itm of selectedOrder.items">
-                    <td class="p-2 font-mono font-bold text-indigo-600">{{ itm.sku }}</td>
-                    <td class="p-2 text-slate-700">{{ itm.product_name }}</td>
-                    <td class="p-2 text-center font-mono">{{ itm.quantity }}</td>
-                    <td class="p-2 text-right font-mono"><span>$</span>{{ itm.unit_price | number }}</td>
-                    <td class="p-2 text-right font-mono font-bold text-slate-800"><span>$</span>{{ itm.total_amount | number }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Raw Payload Inspection -->
-          <div *ngIf="selectedOrder.raw_payload" class="space-y-2">
-            <div class="text-xs font-bold text-slate-700 uppercase">Payload Crudo de Origen (Raw JSON)</div>
-            <div class="bg-slate-950 text-slate-200 p-3 rounded-lg font-mono text-[11px] max-h-48 overflow-y-auto">
-              <pre class="whitespace-pre-wrap">{{ formatJSON(selectedOrder.raw_payload) }}</pre>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-end pt-3 border-t border-slate-100">
-            <button (click)="selectedOrder = null" class="btn btn-secondary btn-sm text-xs">Cerrar</button>
+          <div class="modal-footer">
+            <button (click)="selectedOrder = null" class="btn btn-secondary btn-sm text-xs px-4">
+              Cerrar
+            </button>
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem;
-    }
-  `]
+  styles: []
 })
 export class OrdersComponent implements OnInit {
   private api = inject(ApiService);
