@@ -96,6 +96,7 @@ import { StandardizedOrderReport, Integration } from '../../core/models/types';
                 <th class="p-3.5">Nº Pedido</th>
                 <th class="p-3.5">Cliente & Contacto</th>
                 <th class="p-3.5">Dirección de Despacho</th>
+                <th class="p-3.5">Comuna / Ciudad</th>
                 <th class="p-3.5 min-w-[280px]">Desglose de SKUs & Productos</th>
                 <th class="p-3.5 text-right">Total</th>
                 <th class="p-3.5 text-center">Estado</th>
@@ -128,14 +129,19 @@ import { StandardizedOrderReport, Integration } from '../../core/models/types';
                   </div>
                 </td>
 
-                <!-- Dirección & Comuna -->
+                <!-- Dirección -->
                 <td class="p-3.5">
                   <div class="font-medium text-slate-700 text-xs">
                     {{ ord.shipping_address || 'Sin dirección registrada' }}
                   </div>
-                  <div *ngIf="ord.city || ord.commune" class="text-[11px] font-bold text-amber-700 mt-0.5 flex items-center gap-1">
+                </td>
+
+                <!-- Comuna / Ciudad -->
+                <td class="p-3.5">
+                  <span *ngIf="ord.city || ord.commune" class="font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded border border-amber-200/80 text-[11px] inline-flex items-center gap-1 shadow-sm">
                     <span>📍</span> {{ ord.city || ord.commune }}
-                  </div>
+                  </span>
+                  <span *ngIf="!ord.city && !ord.commune" class="text-slate-400 italic text-[11px]">-</span>
                 </td>
 
                 <!-- Desglose de SKUs & Productos -->
@@ -182,13 +188,13 @@ import { StandardizedOrderReport, Integration } from '../../core/models/types';
               </tr>
 
               <tr *ngIf="orders().length === 0 && !loading()">
-                <td colspan="9" class="p-8 text-center text-slate-400">
+                <td colspan="10" class="p-8 text-center text-slate-400">
                   No se encontraron pedidos estandarizados con los filtros seleccionados.
                 </td>
               </tr>
 
               <tr *ngIf="loading()">
-                <td colspan="9" class="p-8 text-center text-slate-400">
+                <td colspan="10" class="p-8 text-center text-slate-400">
                   Cargando pedidos estandarizados...
                 </td>
               </tr>
