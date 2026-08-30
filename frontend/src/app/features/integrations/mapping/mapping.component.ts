@@ -55,6 +55,9 @@ import {
         </div>
 
         <div class="flex items-center flex-wrap gap-2.5">
+          <button (click)="saveAllMappings()" [disabled]="savingMappings()" class="btn btn-success btn-sm flex items-center gap-1.5 px-4 py-2 font-bold shadow-sm">
+            <span>💾</span> {{ savingMappings() ? 'Guardando...' : 'Guardar Mapeo' }}
+          </button>
           <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm flex items-center gap-1.5 px-4 py-2 font-semibold shadow-sm">
             <span>📥</span> {{ loadingSample() ? 'Consultando API...' : 'Obtener Pedido en Vivo' }}
           </button>
@@ -171,6 +174,7 @@ import {
                   <div class="space-y-1.5">
                     <div class="flex items-center gap-2">
                       <select [(ngModel)]="sampleKeyAssignments[item.path]"
+                              (change)="assignSampleKeyToCanonical(item.path)"
                               class="form-select text-xs py-1.5 px-3 bg-slate-900 border border-slate-700 text-slate-100 rounded w-full focus:border-indigo-500">
                         <option value="">(Sin asociar / Dejar en blanco)</option>
                         <optgroup label="📦 Datos del Pedido">
@@ -354,6 +358,7 @@ export class DynamicMappingComponent implements OnInit {
   searchQuery = '';
   loadingSample = signal<boolean>(false);
   testingMapping = signal<boolean>(false);
+  savingMappings = signal<boolean>(false);
 
   previewResult: MappingPreviewResponse | null = null;
   showVersionModal = false;
@@ -480,6 +485,40 @@ export class DynamicMappingComponent implements OnInit {
   getAssignedCanonicalForPath(path: string): string {
     const found = this.activeMappings().find(m => m.source_path === path);
     return found ? found.canonical_field : '';
+  }
+
+  saveAllMappings() {
+    this.savingMappings.set(true);
+    const mappings: FieldMapping[] = [];
+
+    for (const [path, canonicalField] of Object.entries(this.sampleKeyAssignments)) {
+      if (canonicalField && canonicalField.trim() !== '') {
+        mappings.push({
+          canonical_field: canonicalField,
+          source_path: path,
+          transformation: 'COPY',
+          data_type: 'STRING',
+          mapping_type: 'OVERRIDE',
+          required: true,
+          default_value: '',
+          enabled: true
+        });
+      }
+    }
+
+    this.api.saveIntegrationMapping(this.integrationId, mappings).subscribe({
+      next: (res) => {
+        this.savingMappings.set(false);
+        this.mappingResult.set(res);
+        this.activeMappings.set(res.mappings);
+        this.toast.success(`✅ ${mappings.length} reglas de mapeo guardadas exitosamente`);
+        this.loadVersions();
+      },
+      error: (err) => {
+        this.savingMappings.set(false);
+        this.toast.error('Error guardando mapeos: ' + (err.error?.error || err.message));
+      }
+    });
   }
 
   assignSampleKeyToCanonical(path: string) {
