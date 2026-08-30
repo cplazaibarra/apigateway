@@ -227,10 +227,12 @@ func (s *IntegrationService) ToggleStatus(ctx context.Context, id string) (strin
 		return "", err
 	}
 	newStatus := "DISABLED"
+	newPolling := false
 	if current == "DISABLED" {
 		newStatus = "ACTIVE"
+		newPolling = true
 	}
-	_, err = s.db.ExecContext(ctx, "UPDATE integrations SET status = $1, updated_at = NOW() WHERE id = $2", newStatus, id)
+	_, err = s.db.ExecContext(ctx, "UPDATE integrations SET status = $1, polling_enabled = $2, updated_at = NOW() WHERE id = $3", newStatus, newPolling, id)
 	return newStatus, err
 }
 

@@ -107,28 +107,34 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   </div>
                 </td>
 
+                <!-- Estado & Polling -->
                 <td>
                   <div class="flex items-center gap-2">
                     <button *ngIf="auth.isOperator()"
                             (click)="confirmToggleStatus(it)"
-                            class="badge cursor-pointer transition hover:opacity-80 active:scale-95 shadow-sm"
+                            class="badge cursor-pointer transition hover:opacity-80 active:scale-95 shadow-sm font-bold"
                             [class.badge-success]="it.status === 'ACTIVE'"
                             [class.badge-danger]="it.status === 'ERROR'"
                             [class.badge-muted]="it.status === 'DISABLED'"
                             [title]="it.status === 'ACTIVE' ? 'Hacer clic para DESHABILITAR esta integración (pedirá confirmación)' : 'Hacer clic para ACTIVAR esta integración'">
                       <span class="status-dot" [class.active]="it.status === 'ACTIVE'" [class.error]="it.status === 'ERROR'" [class.disabled]="it.status === 'DISABLED'"></span>
-                      {{ it.status }}
+                      {{ it.status === 'ACTIVE' ? 'ACTIVA' : (it.status === 'DISABLED' ? 'DESHABILITADA' : it.status) }}
                     </button>
-                    <span *ngIf="!auth.isOperator()" class="badge" [class.badge-success]="it.status === 'ACTIVE'" [class.badge-danger]="it.status === 'ERROR'" [class.badge-muted]="it.status === 'DISABLED'">
+                    <span *ngIf="!auth.isOperator()" class="badge font-bold" [class.badge-success]="it.status === 'ACTIVE'" [class.badge-danger]="it.status === 'ERROR'" [class.badge-muted]="it.status === 'DISABLED'">
                       <span class="status-dot" [class.active]="it.status === 'ACTIVE'" [class.error]="it.status === 'ERROR'" [class.disabled]="it.status === 'DISABLED'"></span>
-                      {{ it.status }}
+                      {{ it.status === 'ACTIVE' ? 'ACTIVA' : (it.status === 'DISABLED' ? 'DESHABILITADA' : it.status) }}
                     </span>
                   </div>
-                  <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-                    <span>⏱️ {{ it.polling_interval_minutes }}m</span>
-                    <button *ngIf="auth.isOperator()" (click)="togglePolling(it)" class="text-[10px] text-indigo-400 hover:underline">
-                      ({{ it.polling_enabled ? 'Activado' : 'Pausado' }})
+
+                  <!-- Polling detail only if ACTIVE/ERROR -->
+                  <div *ngIf="it.status !== 'DISABLED'" class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                    <span>⏱️ Cada {{ it.polling_interval_minutes }}m</span>
+                    <button *ngIf="auth.isOperator()" (click)="togglePolling(it)" class="text-[10px] text-indigo-400 hover:underline" [title]="it.polling_enabled ? 'Pausar polling automático' : 'Reanudar polling automático'">
+                      ({{ it.polling_enabled ? 'Auto' : 'Pausado' }})
                     </button>
+                  </div>
+                  <div *ngIf="it.status === 'DISABLED'" class="text-[10px] text-slate-500 mt-1 italic">
+                    Sin consultas automáticas
                   </div>
                 </td>
 
