@@ -6,12 +6,11 @@ import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Integration, Customer, ProviderTestResult } from '../../core/models/types';
-import { DynamicMappingComponent } from './mapping/mapping.component';
 
 @Component({
   selector: 'app-integrations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DynamicMappingComponent],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="page-body space-y-6">
       <!-- Title & Filters Bar -->
@@ -119,9 +118,9 @@ import { DynamicMappingComponent } from './mapping/mapping.component';
                 </td>
 
                 <td class="text-right space-x-1.5 whitespace-nowrap">
-                  <button (click)="openMapping(it)" class="btn btn-secondary btn-sm text-xs py-1 text-indigo-300 hover:text-indigo-200 border-indigo-500/30" title="Configurar Mapeo Dinámico de Campos">
-                    🗺️ Mapeo
-                  </button>
+                  <a [routerLink]="['/integrations', it.id, 'mapping']" class="btn btn-secondary btn-sm text-xs py-1 text-indigo-300 hover:text-indigo-200 border-indigo-500/30 inline-flex items-center gap-1" title="Configurar Mapeo Dinámico de Campos">
+                    <span>🗺️</span> Mapeo
+                  </a>
                   <button *ngIf="auth.isOperator()" (click)="testConnection(it)" class="btn btn-secondary btn-sm text-xs py-1" title="Probar conexión en vivo">
                     🔍 Probar
                   </button>
@@ -147,14 +146,6 @@ import { DynamicMappingComponent } from './mapping/mapping.component';
             </tbody>
           </table>
         </div>
-      </div>
-
-      <!-- DYNAMIC FIELD MAPPING DRAWER / VIEW -->
-      <div *ngIf="selectedIntegrationForMapping()" class="mt-6">
-        <app-dynamic-mapping
-          [integration]="selectedIntegrationForMapping()!"
-          (close)="selectedIntegrationForMapping.set(null)">
-        </app-dynamic-mapping>
       </div>
     </div>
 

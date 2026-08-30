@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -18,9 +19,27 @@ import {
 @Component({
   selector: 'app-dynamic-mapping',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="mapping-container space-y-6">
+    <div class="page-body space-y-6">
+      <!-- Breadcrumb / Back Navigation -->
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <a routerLink="/integrations" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium">
+            <span>🔌</span> Conexiones & Integraciones
+          </a>
+          <span>/</span>
+          <span class="text-slate-200 font-semibold">Mapeo Dinámico de Campos</span>
+          <span *ngIf="integration">({{ integration.name }})</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a routerLink="/integrations" class="btn btn-secondary btn-sm flex items-center gap-1.5">
+            <span>⬅️</span> Volver a Integraciones
+          </a>
+        </div>
+      </div>
+
       <!-- Header Bar with Stats & Actions -->
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
         <div>
@@ -28,11 +47,11 @@ import {
             <span class="text-2xl">🗺️</span>
             <div>
               <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                Mapeo Dinámico de Campos: {{ mappingResult()?.integration_name || integration.name }}
+                Mapeo Dinámico: {{ mappingResult()?.integration_name || integration?.name || 'Cargando...' }}
                 <span class="badge badge-primary text-[10px] uppercase font-mono">v{{ mappingResult()?.current_version || 1 }}</span>
               </h3>
               <p class="text-xs text-slate-400 mt-0.5">
-                Transformación del payload de origen ({{ integration.provider }}) al modelo canónico de la plataforma
+                Transformación del payload de origen ({{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}) al modelo canónico de la plataforma
               </p>
             </div>
           </div>
@@ -51,7 +70,7 @@ import {
           <button (click)="openVersionHistory()" class="btn btn-secondary btn-sm flex items-center gap-1.5">
             <span>🕒</span> Versiones ({{ versions().length }})
           </button>
-          <button (click)="close.emit()" class="btn btn-secondary btn-sm">
+          <button *ngIf="close.observed" (click)="close.emit()" class="btn btn-secondary btn-sm">
             <span>✕</span> Cerrar
           </button>
         </div>
@@ -98,7 +117,7 @@ import {
         <div class="card bg-slate-900 border-slate-800 p-4">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Modo de Adaptación</div>
           <div class="text-sm font-bold text-purple-400 mt-1 truncate">
-            {{ integration.provider }} GENÉRICO
+            {{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }} GENÉRICO
           </div>
           <div class="text-[11px] text-slate-400 mt-0.5">
             {{ overrideCount() }} Overrides Personalizados
@@ -404,7 +423,7 @@ import {
               <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
                 <div class="font-bold text-slate-200 text-sm">Paso 1: Obtener Pedido de Muestra</div>
                 <p class="text-slate-400">
-                  Para poder inferir los campos y probar las transformaciones con datos reales, necesitamos un payload de muestra de <strong>{{ integration.provider }}</strong>.
+                  Para poder inferir los campos y probar las transformaciones con datos reales, necesitamos un payload de muestra de <strong>{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</strong>.
                 </p>
                 <div class="pt-2 flex items-center gap-3">
                   <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm text-xs flex items-center gap-1.5">
@@ -674,11 +693,13 @@ import {
   `]
 })
 export class DynamicMappingComponent implements OnInit {
-  @Input({ required: true }) integration!: Integration;
+  @Input() integration?: Integration;
   @Output() close = new EventEmitter<void>();
 
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   public auth = inject(AuthService);
 
   activeTab: 'mappings' | 'explorer' | 'preview' = 'mappings';
@@ -719,14 +740,54 @@ export class DynamicMappingComponent implements OnInit {
     enabled: true
   };
 
+  get integrationId(): string {
+    return this.integration?.id || this.route.snapshot.paramMap.get('id') || '';
+  }
+
   ngOnInit() {
+    const routeId = this.route.snapshot.paramMap.get('id');
+    if (!this.integration && routeId) {
+      this.api.getIntegration(routeId).subscribe({
+        next: (it) => {
+          this.integration = it;
+          this.loadData();
+        },
+        error: () => {
+          this.integration = {
+            id: routeId,
+            customer_id: '',
+            customer_name: '',
+            name: `Integración ${routeId}`,
+            provider: 'WOOCOMMERCE',
+            base_url: '',
+            auth_type: 'API_KEY',
+            status: 'ACTIVE',
+            polling_interval_minutes: 5,
+            polling_enabled: true,
+            total_orders_synced: 0,
+            consecutive_errors: 0,
+            avg_response_time_ms: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          this.loadData();
+        }
+      });
+    } else if (this.integration) {
+      this.loadData();
+    }
+  }
+
+  loadData() {
+    if (!this.integration?.id) return;
     this.loadEffectiveMapping();
     this.loadCanonicalFields();
     this.loadVersions();
   }
 
   loadEffectiveMapping() {
-    this.api.getIntegrationMapping(this.integration.id).subscribe({
+    if (!this.integration?.id) return;
+    this.api.getIntegrationMapping(this.integrationId).subscribe({
       next: (res) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings || []);
@@ -747,7 +808,8 @@ export class DynamicMappingComponent implements OnInit {
   }
 
   loadVersions() {
-    this.api.getMappingVersions(this.integration.id).subscribe({
+    if (!this.integration?.id) return;
+    this.api.getMappingVersions(this.integrationId).subscribe({
       next: (v) => this.versions.set(v),
       error: () => {}
     });
@@ -784,7 +846,7 @@ export class DynamicMappingComponent implements OnInit {
 
   fetchSampleOrder() {
     this.loadingSample.set(true);
-    this.api.fetchSampleOrderPayload(this.integration.id).subscribe({
+    this.api.fetchSampleOrderPayload(this.integrationId).subscribe({
       next: (res) => {
         this.loadingSample.set(false);
         this.samplePayload = res.raw_payload;
@@ -851,7 +913,7 @@ export class DynamicMappingComponent implements OnInit {
       mappings.push(newRule);
     }
 
-    this.api.saveIntegrationMapping(this.integration.id, mappings).subscribe({
+    this.api.saveIntegrationMapping(this.integrationId, mappings).subscribe({
       next: (res) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);
@@ -864,7 +926,7 @@ export class DynamicMappingComponent implements OnInit {
 
   runLiveTest() {
     this.testingMapping.set(true);
-    this.api.testIntegrationMapping(this.integration.id, this.activeMappings()).subscribe({
+    this.api.testIntegrationMapping(this.integrationId, this.activeMappings()).subscribe({
       next: (res) => {
         this.testingMapping.set(false);
         this.previewResult = res;
@@ -914,7 +976,7 @@ export class DynamicMappingComponent implements OnInit {
 
   suggestAutoMappings() {
     this.loadingAutoMap.set(true);
-    this.api.suggestAutoMappings(this.integration.id).subscribe({
+    this.api.suggestAutoMappings(this.integrationId).subscribe({
       next: (s) => {
         this.loadingAutoMap.set(false);
         this.autoSuggestions = s;
@@ -941,7 +1003,7 @@ export class DynamicMappingComponent implements OnInit {
         error: () => this.testingMapping.set(false)
       });
     } else {
-      this.api.testIntegrationMapping(this.integration.id, candidateMappings).subscribe({
+      this.api.testIntegrationMapping(this.integrationId, candidateMappings).subscribe({
         next: (res) => {
           this.testingMapping.set(false);
           this.wizardPreview = res;
@@ -978,7 +1040,7 @@ export class DynamicMappingComponent implements OnInit {
 
   commitWizard() {
     const finalMappings = this.buildCandidateMappings();
-    this.api.saveIntegrationMapping(this.integration.id, finalMappings).subscribe({
+    this.api.saveIntegrationMapping(this.integrationId, finalMappings).subscribe({
       next: (res) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);
@@ -1030,7 +1092,7 @@ export class DynamicMappingComponent implements OnInit {
       mappings.push(ruleToSave);
     }
 
-    this.api.saveIntegrationMapping(this.integration.id, mappings).subscribe({
+    this.api.saveIntegrationMapping(this.integrationId, mappings).subscribe({
       next: (res) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);
@@ -1046,7 +1108,7 @@ export class DynamicMappingComponent implements OnInit {
     if (!rule.id) return;
     if (!confirm(`¿Restaurar '${rule.canonical_field}' a su valor por defecto del proveedor?`)) return;
 
-    this.api.deleteIntegrationMappingRule(this.integration.id, rule.id).subscribe({
+    this.api.deleteIntegrationMappingRule(this.integrationId, rule.id).subscribe({
       next: () => {
         this.toast.success(`Campo ${rule.canonical_field} restaurado a default`);
         this.loadEffectiveMapping();
@@ -1064,7 +1126,7 @@ export class DynamicMappingComponent implements OnInit {
   restoreVersion(version: number) {
     if (!confirm(`¿Estás seguro de restaurar a la Versión ${version}? Se sobrescribirán las reglas actuales.`)) return;
 
-    this.api.restoreMappingVersion(this.integration.id, version).subscribe({
+    this.api.restoreMappingVersion(this.integrationId, version).subscribe({
       next: (res) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);

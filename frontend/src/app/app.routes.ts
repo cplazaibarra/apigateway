@@ -29,6 +29,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/integrations/integrations.component').then(m => m.IntegrationsComponent)
       },
       {
+        path: 'integrations/:id/mapping',
+        loadComponent: () => import('./features/integrations/mapping/mapping.component').then(m => m.DynamicMappingComponent)
+      },
+      {
         path: 'orders',
         loadComponent: () => import('./features/orders/orders.component').then(m => m.OrdersComponent)
       },
