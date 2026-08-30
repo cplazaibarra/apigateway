@@ -679,7 +679,7 @@ import {
                             <div class="flex items-center gap-2">
                               <select [(ngModel)]="sampleKeyAssignments[item.path]"
                                       class="form-select text-xs py-1.5 px-3 bg-slate-900 border border-slate-700 text-slate-100 rounded w-full focus:border-indigo-500">
-                                <option value="">-- Asociar a un campo canónico --</option>
+                                <option value="">(Sin asociar / Dejar en blanco)</option>
                                 <optgroup label="📦 Datos del Pedido">
                                   <option value="order.order_number">order.order_number (Nº de Pedido)</option>
                                   <option value="order.id">order.id (ID Externo)</option>
@@ -711,14 +711,22 @@ import {
                                 </optgroup>
                               </select>
                               <button (click)="assignSampleKeyToCanonical(item.path)"
-                                      [disabled]="!sampleKeyAssignments[item.path]"
                                       class="btn btn-primary btn-sm text-xs py-1.5 px-3 font-semibold whitespace-nowrap shadow-sm"
-                                      title="Guardar asociación">
+                                      title="Guardar o actualizar asociación">
                                 ⚡ Asociar
+                              </button>
+                              <button *ngIf="getAssignedCanonicalForPath(item.path)"
+                                      (click)="clearSampleKeyAssignment(item.path)"
+                                      class="btn btn-secondary btn-sm text-xs py-1.5 px-2 text-slate-400 hover:text-red-400"
+                                      title="Quitar asociación y dejar en blanco">
+                                ✕
                               </button>
                             </div>
                             <div *ngIf="getAssignedCanonicalForPath(item.path)" class="text-[11px] text-emerald-400 flex items-center gap-1 font-sans">
                               <span>✅ Asociado a:</span> <strong class="font-mono text-indigo-300">{{ getAssignedCanonicalForPath(item.path) }}</strong>
+                            </div>
+                            <div *ngIf="!getAssignedCanonicalForPath(item.path)" class="text-[11px] text-slate-500 italic font-sans">
+                              (Campo no asociado / En blanco)
                             </div>
                           </div>
                         </td>
@@ -1436,9 +1444,30 @@ export class DynamicMappingComponent implements OnInit {
     return found ? found.canonical_field : '';
   }
 
+  clearSampleKeyAssignment(path: string) {
+    this.sampleKeyAssignments[path] = '';
+    const currentMappings = this.activeMappings();
+    const updated = currentMappings.filter(m => m.source_path !== path);
+
+    this.api.saveIntegrationMapping(this.integrationId, updated).subscribe({
+      next: (res) => {
+        this.mappingResult.set(res);
+        this.activeMappings.set(res.mappings);
+        this.toast.info(`Ruta ${path} desasociada (dejada en blanco)`);
+        this.loadVersions();
+      },
+      error: (err) => this.toast.error('Error al desasociar: ' + (err.error?.error || err.message))
+    });
+  }
+
   assignSampleKeyToCanonical(path: string) {
     const canonicalField = this.sampleKeyAssignments[path];
-    if (!canonicalField) return;
+
+    if (!canonicalField || canonicalField === '') {
+      // User chose blank option -> unassign
+      this.clearSampleKeyAssignment(path);
+      return;
+    }
 
     const mappings = [...this.activeMappings()];
     const idx = mappings.findIndex(m => m.canonical_field === canonicalField);
