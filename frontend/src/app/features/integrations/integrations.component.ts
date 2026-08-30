@@ -243,15 +243,15 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
 
     <!-- Create / Edit Integration Modal -->
     <div *ngIf="showFormModal()" class="modal-overlay">
-      <div class="modal-container max-w-xl">
-        <div class="modal-header">
+      <div class="modal-container max-w-xl flex flex-col max-h-[90vh]">
+        <div class="modal-header shrink-0">
           <h3 class="text-sm font-bold text-slate-100">
             {{ isEditing() ? 'Editar Integración' : 'Registrar Nueva Integración' }}
           </h3>
           <button (click)="showFormModal.set(false)" class="text-slate-400 hover:text-slate-200">✕</button>
         </div>
-        <form (ngSubmit)="saveIntegration()">
-          <div class="modal-body space-y-3.5 max-h-[70vh] overflow-y-auto">
+        <form (ngSubmit)="saveIntegration()" class="flex flex-col overflow-hidden flex-1">
+          <div class="modal-body space-y-3.5 overflow-y-auto flex-1 p-5">
             <div class="form-group" *ngIf="!isEditing()">
               <label class="form-label">Cliente / Empresa Asignada</label>
               <select [(ngModel)]="formIntegration.customer_id" name="customer_id" required class="form-select text-xs">
@@ -343,9 +343,11 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
             </div>
           </div>
 
-          <div class="modal-footer">
+          <div class="modal-footer shrink-0 bg-slate-950/80 border-t border-slate-800 p-4 flex items-center justify-end gap-3">
             <button type="button" (click)="showFormModal.set(false)" class="btn btn-secondary btn-sm">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-sm">Guardar Integración</button>
+            <button type="submit" class="btn btn-success btn-sm font-bold flex items-center gap-1.5 px-4 py-2 shadow-sm">
+              <span>💾</span> Guardar Integración
+            </button>
           </div>
         </form>
       </div>
