@@ -16,17 +16,17 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
       <!-- Title & Filters Bar -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
             <span>🔌</span> Conexiones & Integraciones
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Adaptadores para WooCommerce, SAP, Odoo y BSALE con pruebas y polling automático</p>
+          <p class="text-xs text-slate-400 mt-0.5">Adaptadores para WooCommerce, SAP, Odoo y BSALE con pruebas y polling automático</p>
         </div>
 
         <div class="flex items-center flex-wrap gap-2.5">
           <input type="text" [(ngModel)]="searchQuery" (input)="loadIntegrations()" placeholder="Buscar integración..." 
-                 class="form-control text-xs py-1.5 px-3 w-48 bg-white border-slate-200 text-slate-800 rounded-xl" />
+                 class="form-control text-xs py-1.5 px-3 w-48 bg-slate-900 border-slate-800" />
 
-          <select [(ngModel)]="selectedProvider" (change)="loadIntegrations()" class="form-select text-xs py-1.5 px-3 w-auto bg-white border-slate-200 text-slate-700 rounded-xl">
+          <select [(ngModel)]="selectedProvider" (change)="loadIntegrations()" class="form-select text-xs py-1.5 px-3 w-auto bg-slate-900 border-slate-800">
             <option value="">Todos los Proveedores</option>
             <option value="WOOCOMMERCE">WooCommerce</option>
             <option value="SAP">SAP</option>
@@ -35,21 +35,21 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
           </select>
 
           <!-- Checkbox Filters for Status (Activas checked by default) -->
-          <div class="flex items-center gap-3 bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl text-xs shadow-sm">
-            <span class="text-slate-400 font-bold uppercase text-[10px]">Mostrar:</span>
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs">
+            <span class="text-slate-500 font-bold uppercase text-[10px]">Mostrar:</span>
             
-            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-700 font-semibold hover:text-emerald-800">
-              <input type="checkbox" [(ngModel)]="filterActive" (change)="loadIntegrations()" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-300 font-semibold hover:text-emerald-200">
+              <input type="checkbox" [(ngModel)]="filterActive" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-emerald-500" />
               <span>Activas</span>
             </label>
 
-            <label class="flex items-center gap-1.5 cursor-pointer text-amber-700 font-semibold hover:text-amber-800">
-              <input type="checkbox" [(ngModel)]="filterError" (change)="loadIntegrations()" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+            <label class="flex items-center gap-1.5 cursor-pointer text-amber-300 font-semibold hover:text-amber-200">
+              <input type="checkbox" [(ngModel)]="filterError" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-amber-500" />
               <span>Con Error</span>
             </label>
 
-            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600 font-semibold hover:text-slate-700">
-              <input type="checkbox" [(ngModel)]="filterDisabled" (change)="loadIntegrations()" class="rounded border-slate-300 text-slate-500 focus:ring-slate-500" />
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-400 font-semibold hover:text-slate-300">
+              <input type="checkbox" [(ngModel)]="filterDisabled" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
               <span>Deshabilitadas</span>
             </label>
           </div>
@@ -61,7 +61,7 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
       </div>
 
       <!-- Integrations Table -->
-      <div class="card bg-white border-slate-200 p-0 overflow-hidden shadow-sm">
+      <div class="card bg-slate-900 border-slate-800 p-0 overflow-hidden">
         <div class="table-container border-0 rounded-none bg-transparent overflow-x-auto">
           <table class="w-full min-w-[1100px]">
             <thead>
@@ -75,33 +75,33 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                 <th>Última Sync</th>
                 <th>Pedidos</th>
                 <th>Latencia</th>
-                <th class="text-right sticky right-0 bg-slate-50 z-10 border-l border-slate-200">Acciones</th>
+                <th class="text-right sticky right-0 bg-slate-900 z-10 shadow-l">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr *ngFor="let it of integrations()" class="hover:bg-slate-50/80 transition">
+            <tbody>
+              <tr *ngFor="let it of integrations()">
                 <td>
-                  <div class="font-semibold text-slate-800 text-sm">{{ it.name }}</div>
-                  <div class="text-xs text-emerald-700 font-mono">{{ it.customer_name }}</div>
-                  <div *ngIf="it.last_error" class="text-[11px] text-red-600 font-mono mt-0.5 truncate max-w-xs" [title]="it.last_error">
+                  <div class="font-semibold text-slate-200 text-sm">{{ it.name }}</div>
+                  <div class="text-xs text-indigo-400 font-mono">{{ it.customer_name }}</div>
+                  <div *ngIf="it.last_error" class="text-[11px] text-red-400 font-mono mt-0.5 truncate max-w-xs" [title]="it.last_error">
                     ⚠️ {{ it.last_error }}
                   </div>
                 </td>
 
                 <td>
                   <span class="code-badge font-bold text-xs" [ngClass]="{
-                    'text-purple-700 bg-purple-50 border-purple-200': it.provider === 'WOOCOMMERCE',
-                    'text-blue-700 bg-blue-50 border-blue-200': it.provider === 'SAP',
-                    'text-amber-700 bg-amber-50 border-amber-200': it.provider === 'ODOO',
-                    'text-emerald-700 bg-emerald-50 border-emerald-200': it.provider === 'BSALE'
+                    'text-purple-400': it.provider === 'WOOCOMMERCE',
+                    'text-blue-400': it.provider === 'SAP',
+                    'text-amber-400': it.provider === 'ODOO',
+                    'text-emerald-400': it.provider === 'BSALE'
                   }">
                     {{ it.provider }}
                   </span>
                 </td>
 
                 <td class="text-xs">
-                  <div class="text-slate-700 font-mono truncate max-w-xs" [title]="it.base_url">{{ it.base_url }}</div>
-                  <div class="text-slate-400 text-[10px] mt-0.5">{{ it.auth_type }} | {{ it.masked_credentials }}</div>
+                  <div class="text-slate-300 font-mono truncate max-w-xs" [title]="it.base_url">{{ it.base_url }}</div>
+                  <div class="text-slate-500 text-[10px] mt-0.5">{{ it.auth_type }} | {{ it.masked_credentials }}</div>
                 </td>
 
                 <!-- Ambiente (PRODUCCIÓN vs PRUEBA) -->
@@ -109,14 +109,14 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   <button *ngIf="auth.isOperator()"
                           (click)="toggleEnvironment(it)"
                           class="btn btn-sm text-xs py-1 px-2.5 font-bold rounded-lg border transition flex items-center gap-1.5 shadow-sm"
-                          [ngClass]="it.environment === 'PRODUCTION' ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100' : 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'"
+                          [ngClass]="it.environment === 'PRODUCTION' ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 hover:bg-emerald-900' : 'bg-amber-950/80 border-amber-500 text-amber-300 hover:bg-amber-900'"
                           [title]="it.environment === 'PRODUCTION' ? 'En PRODUCCIÓN: al sincronizar cambiará el estado de los pedidos en la tienda origen. Clic para cambiar a MODO PRUEBA.' : 'En MODO PRUEBA: solo consulta la API y no modifica el estado en la tienda origen. Clic para activar PRODUCCIÓN.'">
                     <span>{{ it.environment === 'PRODUCTION' ? '🟢 PRODUCCIÓN' : '🧪 MODO PRUEBA' }}</span>
                   </button>
                   <span *ngIf="!auth.isOperator()" class="badge" [ngClass]="it.environment === 'PRODUCTION' ? 'badge-success' : 'badge-warning'">
                     {{ it.environment === 'PRODUCTION' ? 'PRODUCCIÓN' : 'PRUEBA' }}
                   </span>
-                  <div class="text-[10px] text-slate-400 mt-1">
+                  <div class="text-[10px] text-slate-500 mt-1">
                     {{ it.environment === 'PRODUCTION' ? 'Actualiza estado en tienda' : 'Solo lectura en tienda' }}
                   </div>
                 </td>
@@ -126,7 +126,7 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   <button *ngIf="auth.isOperator()"
                           (click)="confirmToggleStatus(it)"
                           class="badge cursor-pointer transition hover:opacity-85 active:scale-95 shadow-sm font-bold py-1 px-2.5 rounded-lg border"
-                          [ngClass]="it.status === 'ACTIVE' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : (it.status === 'DISABLED' ? 'bg-slate-100 border-slate-200 text-slate-500' : 'bg-red-50 border-red-300 text-red-700')"
+                          [ngClass]="it.status === 'ACTIVE' ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' : (it.status === 'DISABLED' ? 'bg-slate-900 border-slate-700 text-slate-400' : 'bg-red-950/60 border-red-500/50 text-red-300')"
                           [title]="it.status === 'ACTIVE' ? 'Clic para DESHABILITAR la integración' : 'Clic para ACTIVAR la integración'">
                     <span class="status-dot" [class.active]="it.status === 'ACTIVE'" [class.error]="it.status === 'ERROR'" [class.disabled]="it.status === 'DISABLED'"></span>
                     {{ it.status === 'ACTIVE' ? 'ACTIVA' : (it.status === 'DISABLED' ? 'DESHABILITADA' : it.status) }}
@@ -143,40 +143,40 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                     <button *ngIf="auth.isOperator()"
                             (click)="togglePolling(it)"
                             class="btn btn-xs py-0.5 px-2 font-mono text-[11px] rounded border transition flex items-center gap-1"
-                            [ngClass]="it.polling_enabled ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200'"
+                            [ngClass]="it.polling_enabled ? 'bg-indigo-950/60 border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/60' : 'bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800'"
                             [title]="it.polling_enabled ? 'Polling activo: clic para pausar consultas automáticas' : 'Polling pausado: clic para reanudar consultas automáticas'">
                       <span>{{ it.polling_enabled ? '▶ Activo' : '⏸ Pausado' }}</span>
                     </button>
-                    <span class="text-slate-500 text-[11px] font-mono">⏱️ {{ it.polling_interval_minutes }}m</span>
+                    <span class="text-slate-400 text-[11px] font-mono">⏱️ {{ it.polling_interval_minutes }}m</span>
                   </div>
-                  <div *ngIf="it.status === 'DISABLED'" class="text-[11px] text-slate-400 italic">
+                  <div *ngIf="it.status === 'DISABLED'" class="text-[11px] text-slate-500 italic">
                     —
                   </div>
                 </td>
 
-                <td class="text-xs text-slate-600">
+                <td class="text-xs text-slate-400">
                   <div>{{ it.last_sync_at ? (it.last_sync_at | date:'dd/MM HH:mm') : 'Pendiente' }}</div>
-                  <div class="text-[10px] text-slate-400">Próx: {{ it.next_polling_at ? (it.next_polling_at | date:'HH:mm') : '-' }}</div>
+                  <div class="text-[10px] text-slate-500">Próx: {{ it.next_polling_at ? (it.next_polling_at | date:'HH:mm') : '-' }}</div>
                 </td>
 
                 <td class="text-xs">
-                  <div class="font-mono font-bold text-slate-800 text-sm">
+                  <div class="font-mono font-bold text-purple-400 text-sm">
                     {{ it.total_orders_synced | number }}
                   </div>
-                  <div class="text-[10px] text-slate-400 font-mono mt-0.5" title="Cantidad de pedidos solicitados por lote a la API">
+                  <div class="text-[10px] text-slate-500 font-mono mt-0.5" title="Cantidad de pedidos solicitados por lote a la API">
                     📦 Lote: {{ it.sync_batch_size || 10 }} / req
                   </div>
                 </td>
 
-                <td class="font-mono font-semibold text-xs text-slate-600">
+                <td class="font-mono font-semibold text-xs text-amber-400">
                   {{ it.avg_response_time_ms }} ms
                 </td>
 
-                <td class="text-right space-x-1.5 whitespace-nowrap sticky right-0 bg-white z-10 border-l border-slate-200">
-                  <a [routerLink]="['/integrations', it.id, 'mapping']" class="btn btn-secondary btn-sm text-xs py-1 text-emerald-700 hover:text-emerald-800 border-emerald-200 bg-emerald-50 inline-flex items-center gap-1" title="Configurar Mapeo Dinámico de Campos">
+                <td class="text-right space-x-1.5 whitespace-nowrap sticky right-0 bg-slate-900 z-10 border-l border-slate-800">
+                  <a [routerLink]="['/integrations', it.id, 'mapping']" class="btn btn-secondary btn-sm text-xs py-1 text-indigo-300 hover:text-indigo-200 border-indigo-500/30 inline-flex items-center gap-1" title="Configurar Mapeo Dinámico de Campos">
                     <span>🗺️</span> Mapeo
                   </a>
-                  <button (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1 text-slate-700 hover:text-slate-900 border-slate-200 bg-white hover:bg-slate-50 inline-flex items-center gap-1 font-semibold" title="Editar configuración de la integración">
+                  <button (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1 text-slate-100 hover:text-white border-slate-600 bg-slate-800 hover:bg-slate-700 inline-flex items-center gap-1 font-semibold" title="Editar configuración de la integración">
                     <span>✏️</span> Editar
                   </button>
                   <button *ngIf="auth.isOperator()" (click)="testConnection(it)" class="btn btn-secondary btn-sm text-xs py-1" title="Probar conexión en vivo">
