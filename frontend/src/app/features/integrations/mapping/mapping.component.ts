@@ -550,100 +550,116 @@ import {
         </div>
       </div>
 
-      <!-- MAPPING WIZARD MODAL (4-STEP GUIDED FLOW) -->
-      <div *ngIf="showWizard" class="modal-overlay">
-        <div class="modal-container max-w-3xl">
+      <!-- MAPPING WIZARD MODAL (FULLSCREEN DEDICATED VIEW) -->
+      <div *ngIf="showWizard" class="wizard-fullscreen-overlay">
+        <div class="wizard-fullscreen-container">
           <!-- Wizard Header -->
-          <div class="modal-header">
-            <div>
-              <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                <span>🪄</span> Asistente de Mapeo (Mapping Wizard)
-              </h3>
-              <p class="text-xs text-slate-400">Configura, prueba con un pedido real y guarda con control de versiones</p>
+          <div class="wizard-header">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl p-2 bg-indigo-950/80 rounded-lg border border-indigo-500/30">🪄</span>
+              <div>
+                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  Asistente de Mapeo Inteligente (Mapping Wizard)
+                  <span class="badge badge-primary text-[10px] font-mono uppercase">{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</span>
+                </h3>
+                <p class="text-xs text-slate-400">Configuración guiada paso a paso, análisis de sugerencias y prueba con pedido en vivo</p>
+              </div>
             </div>
-            <button (click)="showWizard = false" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+            <button (click)="showWizard = false" class="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs">
+              <span>✕</span> Salir del Asistente
+            </button>
           </div>
 
           <!-- Wizard Stepper Indicators -->
-          <div class="grid grid-cols-4 gap-2 p-4 bg-slate-900 border-b border-slate-800 text-center text-xs">
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 1 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
-              1. Payload Muestra
+          <div class="grid grid-cols-4 gap-3 p-4 bg-slate-900 border-b border-slate-800 text-center text-xs">
+            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 1 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 1 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">1</span>
+              <span>1. Payload Muestra</span>
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 2 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
-              2. Sugerencias
+            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 2 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 2 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">2</span>
+              <span>2. Sugerencias Detectadas</span>
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 3 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
-              3. Prueba & Preview
+            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 3 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 3 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">3</span>
+              <span>3. Prueba & Preview Canónico</span>
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 4 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
-              4. Guardar Versión
+            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 4 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 4 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">4</span>
+              <span>4. Guardar Nueva Versión</span>
             </div>
           </div>
 
           <!-- Wizard Body Content -->
-          <div class="modal-body space-y-4 text-xs">
+          <div class="wizard-body space-y-5">
             <!-- STEP 1: SAMPLE PAYLOAD -->
-            <div *ngIf="wizardStep === 1" class="space-y-3">
-              <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                <div class="font-bold text-slate-200 text-sm">Paso 1: Obtener Pedido de Muestra</div>
-                <p class="text-slate-400">
-                  Para poder inferir los campos y probar las transformaciones con datos reales, necesitamos un payload de muestra de <strong>{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</strong>.
+            <div *ngIf="wizardStep === 1" class="space-y-4">
+              <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+                <div class="font-bold text-slate-100 text-base flex items-center gap-2">
+                  <span>📥</span> Paso 1: Obtener Pedido de Muestra Real
+                </div>
+                <p class="text-slate-400 text-xs">
+                  Para poder inferir los campos automáticamente y validar las transformaciones con datos 100% reales, obtenemos un pedido de muestra de la tienda externa <strong>{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</strong>.
                 </p>
-                <div class="pt-2 flex items-center gap-3">
-                  <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm text-xs flex items-center gap-1.5">
-                    <span>📥</span> {{ loadingSample() ? 'Consultando API...' : 'Obtener Pedido en Vivo del Proveedor' }}
+                <div class="pt-2 flex items-center gap-4">
+                  <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm flex items-center gap-2 px-4 py-2 font-semibold">
+                    <span>⚡</span> {{ loadingSample() ? 'Consultando API en Vivo...' : 'Consultar Pedido en Vivo del Proveedor' }}
                   </button>
-                  <span *ngIf="samplePayload" class="text-emerald-400 font-bold text-xs flex items-center gap-1">
-                    ✅ Payload cargado correctamente
+                  <span *ngIf="samplePayload" class="text-emerald-400 font-bold text-xs flex items-center gap-1 bg-emerald-950/40 px-3 py-1.5 rounded border border-emerald-500/30">
+                    ✅ Payload cargado correctamente ({{ flattenedSampleKeys.length }} nodos detectados)
                   </span>
                 </div>
               </div>
 
-              <div *ngIf="samplePayload" class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <div class="text-[11px] font-bold text-slate-400 uppercase mb-1">Vista Previa de Claves del Payload:</div>
-                <div class="font-mono text-[11px] text-slate-300 max-h-48 overflow-y-auto bg-slate-900 p-2.5 rounded border border-slate-800">
-                  <div *ngFor="let item of flattenedSampleKeys.slice(0, 15)">
-                    <span class="text-indigo-400">{{ item.path }}:</span> <span class="text-slate-400">{{ item.value }}</span>
-                  </div>
-                  <div *ngIf="flattenedSampleKeys.length > 15" class="text-slate-500 italic mt-1">
-                    ... y {{ flattenedSampleKeys.length - 15 }} campos más
+              <div *ngIf="samplePayload" class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-2">
+                <div class="text-xs font-bold text-slate-300 uppercase tracking-wider">Explorador de Claves del Payload Obtenido:</div>
+                <div class="font-mono text-xs text-slate-300 max-h-96 overflow-y-auto bg-slate-900 p-4 rounded-lg border border-slate-800 space-y-1.5">
+                  <div *ngFor="let item of flattenedSampleKeys" class="flex items-center justify-between py-1 border-b border-slate-800/40 hover:bg-slate-800/50 px-2 rounded">
+                    <span class="text-indigo-400 font-semibold">{{ item.path }}</span>
+                    <span class="text-slate-400 text-[11px] truncate max-w-lg">{{ item.value }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- STEP 2: AUTO-MAPPING SUGGESTIONS -->
-            <div *ngIf="wizardStep === 2" class="space-y-3">
-              <div class="flex items-center justify-between">
+            <div *ngIf="wizardStep === 2" class="space-y-4">
+              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <div class="font-bold text-slate-200 text-sm">Paso 2: Sugerencias Automáticas Detectadas</div>
-                  <p class="text-slate-400 text-[11px]">Revisa y selecciona las correspondencias sugeridas para tus campos canónicos</p>
+                  <div class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                    <span>🪄</span> Paso 2: Sugerencias Automáticas Detectadas
+                  </div>
+                  <p class="text-slate-400 text-xs mt-0.5">
+                    Selecciona las correspondencias sugeridas que deseas aplicar como reglas activas para este proveedor.
+                  </p>
                 </div>
-                <button (click)="suggestAutoMappings()" [disabled]="loadingAutoMap()" class="btn btn-secondary btn-sm text-xs">
-                  🔄 Re-analizar
+                <button (click)="suggestAutoMappings()" [disabled]="loadingAutoMap()" class="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs">
+                  <span>🔄</span> {{ loadingAutoMap() ? 'Escaneando...' : 'Re-analizar Payload' }}
                 </button>
               </div>
 
-              <div *ngIf="autoSuggestions.length > 0" class="border border-slate-800 rounded-lg overflow-hidden bg-slate-950">
-                <div class="max-h-64 overflow-y-auto">
+              <div *ngIf="autoSuggestions.length > 0" class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950 shadow-inner">
+                <div class="max-h-[60vh] overflow-y-auto">
                   <table class="w-full text-left">
-                    <thead class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[11px]">
+                    <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800 text-xs sticky top-0 z-10">
                       <tr>
-                        <th class="p-2.5 w-8"><input type="checkbox" (change)="toggleAllSuggestions($event)" checked /></th>
-                        <th class="p-2.5">Campo Canónico</th>
-                        <th class="p-2.5">Ruta Origen</th>
-                        <th class="p-2.5">Transformación</th>
-                        <th class="p-2.5">Confianza</th>
+                        <th class="p-3 w-10 text-center"><input type="checkbox" (change)="toggleAllSuggestions($event)" checked class="form-checkbox rounded" /></th>
+                        <th class="p-3">Campo Canónico Objetivo</th>
+                        <th class="p-3">Ruta de Origen Detectada</th>
+                        <th class="p-3">Transformación Sugerida</th>
+                        <th class="p-3 text-center">Nivel de Confianza</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
-                      <tr *ngFor="let s of autoSuggestions; let i = index" class="hover:bg-slate-900/60">
-                        <td class="p-2.5"><input type="checkbox" [(ngModel)]="selectedSuggestions[i]" /></td>
-                        <td class="p-2.5 font-bold text-indigo-400">{{ s.canonical_field }}</td>
-                        <td class="p-2.5 text-emerald-400">{{ s.source_path }}</td>
-                        <td class="p-2.5 text-slate-300">{{ s.transformation || 'COPY' }}</td>
-                        <td class="p-2.5">
-                          <span class="badge badge-success text-[9px]">{{ s.confidence * 100 | number:'1.0-0' }}%</span>
+                    <tbody class="divide-y divide-slate-800/80 font-mono text-xs">
+                      <tr *ngFor="let s of autoSuggestions; let i = index" class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 text-center"><input type="checkbox" [(ngModel)]="selectedSuggestions[i]" class="form-checkbox rounded" /></td>
+                        <td class="p-3 font-bold text-indigo-300">{{ s.canonical_field }}</td>
+                        <td class="p-3 text-emerald-400 bg-slate-900/40">{{ s.source_path }}</td>
+                        <td class="p-3 text-slate-200">
+                          <span class="code-badge text-xs">{{ s.transformation || 'COPY' }}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                          <span class="badge badge-success text-[10px] font-bold">{{ s.confidence * 100 | number:'1.0-0' }}% MATCH</span>
                         </td>
                       </tr>
                     </tbody>
@@ -651,56 +667,75 @@ import {
                 </div>
               </div>
 
-              <div *ngIf="autoSuggestions.length === 0" class="text-center py-8 text-slate-500">
-                Haz clic en "Re-analizar" para escanear el payload de muestra
+              <div *ngIf="autoSuggestions.length === 0" class="bg-slate-950 border border-slate-800 rounded-xl p-12 text-center text-slate-500 space-y-2">
+                <div class="text-3xl">🪄</div>
+                <div class="text-sm font-semibold text-slate-400">Sin sugerencias generadas</div>
+                <p class="text-xs">Haz clic en "Re-analizar Payload" para escanear las claves JSON de la tienda.</p>
               </div>
             </div>
 
             <!-- STEP 3: DRY-RUN PREVIEW BEFORE SAVING -->
-            <div *ngIf="wizardStep === 3" class="space-y-3">
-              <div class="flex items-center justify-between">
+            <div *ngIf="wizardStep === 3" class="space-y-4">
+              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <div class="font-bold text-slate-200 text-sm">Paso 3: Probar Pedido Canónico Antes de Guardar</div>
-                  <p class="text-slate-400 text-[11px]">Ejecuta una transformación de prueba para asegurar que los datos son correctos</p>
+                  <div class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                    <span>🔬</span> Paso 3: Probar Pedido Canónico Antes de Confirmar
+                  </div>
+                  <p class="text-slate-400 text-xs mt-0.5">
+                    Ejecuta una transformación de prueba para asegurar que el modelo canónico se construya íntegramente.
+                  </p>
                 </div>
-                <button (click)="runWizardDryRun()" [disabled]="testingMapping()" class="btn btn-primary btn-sm text-xs">
-                  ⚡ {{ testingMapping() ? 'Probando...' : 'Re-probar Mapeo' }}
+                <button (click)="runWizardDryRun()" [disabled]="testingMapping()" class="btn btn-primary btn-sm flex items-center gap-2 text-xs">
+                  <span>⚡</span> {{ testingMapping() ? 'Probando...' : 'Re-ejecutar Prueba' }}
                 </button>
               </div>
 
-              <div *ngIf="wizardPreview" class="space-y-3">
-                <div *ngIf="wizardPreview.warnings && wizardPreview.warnings.length > 0" class="bg-amber-950/40 border border-amber-800/60 rounded-lg p-3 space-y-1">
-                  <div class="font-bold text-amber-400 text-xs">⚠️ Observaciones de Mapeo ({{ wizardPreview.warnings.length }}):</div>
+              <div *ngIf="wizardPreview" class="space-y-4">
+                <div *ngIf="wizardPreview.warnings && wizardPreview.warnings.length > 0" class="bg-amber-950/40 border border-amber-800/60 rounded-xl p-4 space-y-1.5">
+                  <div class="font-bold text-amber-400 text-xs flex items-center gap-1.5">
+                    <span>⚠️</span> Observaciones de Mapeo ({{ wizardPreview.warnings.length }}):
+                  </div>
                   <div *ngFor="let w of wizardPreview.warnings" class="text-[11px] text-amber-300/80 font-mono">
                     • [{{ w.warning_type }}] {{ w.canonical_field }}: {{ w.message }}
                   </div>
                 </div>
 
-                <div *ngIf="wizardPreview.canonical_order" class="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs space-y-3">
-                  <div class="grid grid-cols-3 gap-2 border-b border-slate-800 pb-2">
+                <div *ngIf="wizardPreview.canonical_order" class="bg-slate-950 border border-slate-800 rounded-xl p-5 font-mono text-xs space-y-4 shadow-sm">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-800 pb-3">
                     <div>
-                      <span class="text-slate-500">ID / Número:</span>
-                      <div class="font-bold text-emerald-400">#{{ wizardPreview.canonical_order.order_number }}</div>
+                      <span class="text-slate-500 text-[10px] uppercase block">Número de Pedido:</span>
+                      <div class="font-bold text-emerald-400 text-base">#{{ wizardPreview.canonical_order.order_number }}</div>
                     </div>
                     <div>
-                      <span class="text-slate-500">Total:</span>
-                      <div class="font-bold text-amber-400"><span>$</span>{{ wizardPreview.canonical_order.total | number }} {{ wizardPreview.canonical_order.currency }}</div>
+                      <span class="text-slate-500 text-[10px] uppercase block">Total Facturado:</span>
+                      <div class="font-bold text-amber-400 text-base">\${{ wizardPreview.canonical_order.total | number }} {{ wizardPreview.canonical_order.currency }}</div>
                     </div>
                     <div>
-                      <span class="text-slate-500">Estado:</span>
-                      <div class="font-bold text-indigo-400">{{ wizardPreview.canonical_order.status }}</div>
+                      <span class="text-slate-500 text-[10px] uppercase block">Estado Canónico:</span>
+                      <div class="font-bold text-indigo-400 text-base">{{ wizardPreview.canonical_order.status }}</div>
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-2">
-                    <div>
-                      <span class="text-slate-500">Cliente:</span>
-                      <div class="text-slate-200">{{ wizardPreview.canonical_order.customer.name }} ({{ wizardPreview.canonical_order.customer.email }})</div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-800 pb-3">
+                    <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800/80">
+                      <span class="text-slate-500 text-[10px] uppercase block font-bold mb-1">👤 Cliente:</span>
+                      <div class="text-slate-100 font-bold">{{ wizardPreview.canonical_order.customer.name }}</div>
+                      <div class="text-indigo-300 text-[11px]">{{ wizardPreview.canonical_order.customer.email }}</div>
                     </div>
-                    <div>
-                      <span class="text-slate-500">Dirección Canónica:</span>
+                    <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800/80">
+                      <span class="text-slate-500 text-[10px] uppercase block font-bold mb-1">📍 Dirección Canónica:</span>
                       <div class="text-emerald-300 font-bold">{{ wizardPreview.canonical_order.delivery.address }}</div>
-                      <div class="text-slate-400">{{ wizardPreview.canonical_order.delivery.city }}, {{ wizardPreview.canonical_order.delivery.region }}</div>
+                      <div class="text-amber-400">{{ wizardPreview.canonical_order.delivery.city }}, {{ wizardPreview.canonical_order.delivery.region }}</div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="wizardPreview.canonical_order.items && wizardPreview.canonical_order.items.length > 0">
+                    <span class="text-slate-500 text-[10px] uppercase block font-bold mb-2">🛒 Productos Extraídos ({{ wizardPreview.canonical_order.items.length }}):</span>
+                    <div class="space-y-1.5">
+                      <div *ngFor="let itm of wizardPreview.canonical_order.items" class="p-2 bg-slate-900 rounded border border-slate-800/80 flex items-center justify-between text-[11px]">
+                        <span><strong class="text-purple-300 font-mono">{{ itm.sku }}</strong> - {{ itm.description }} (x{{ itm.quantity }})</span>
+                        <span class="font-bold text-amber-400">\${{ itm.total | number }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -708,35 +743,37 @@ import {
             </div>
 
             <!-- STEP 4: COMMIT & VERSION SNAPSHOT -->
-            <div *ngIf="wizardStep === 4" class="space-y-3">
-              <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
-                <div class="font-bold text-slate-200 text-sm">Paso 4: Guardar y Crear Nueva Versión</div>
+            <div *ngIf="wizardStep === 4" class="space-y-4">
+              <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4">
+                <div class="font-bold text-slate-100 text-base flex items-center gap-2">
+                  <span>💾</span> Paso 4: Confirmar y Guardar Nueva Versión
+                </div>
                 <p class="text-slate-400 text-xs">
-                  Se generará una nueva versión histórica (v{{ (mappingResult()?.current_version || 1) + 1 }}) con snapshot inmutable para auditoría y rollback.
+                  Se generará una nueva versión histórica (v{{ (mappingResult()?.current_version || 1) + 1 }}) con snapshot inmutable para auditoría y rollback seguro.
                 </p>
 
                 <div>
-                  <label class="block text-slate-400 mb-1">Descripción del Cambio / Motivo de la Versión:</label>
-                  <input type="text" [(ngModel)]="wizardCommitDescription" placeholder="ej. Mapeo inicial de tienda, ajuste de dirección para plugin custom" class="form-control text-xs py-2 px-3 bg-slate-900 border-slate-800 w-full" />
+                  <label class="block text-slate-300 mb-1.5 font-bold">Descripción del Cambio / Motivo de la Versión:</label>
+                  <input type="text" [(ngModel)]="wizardCommitDescription" placeholder="ej. Mapeo inicial de tienda, ajuste de dirección para plugin custom" class="form-control text-xs py-2.5 px-3 bg-slate-900 border-slate-800 w-full rounded-lg" />
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Wizard Footer Navigation Buttons -->
-          <div class="modal-footer">
-            <button *ngIf="wizardStep > 1" (click)="wizardStep = wizardStep - 1" class="btn btn-secondary btn-sm">
-              ⬅️ Anterior
+          <div class="wizard-footer">
+            <button *ngIf="wizardStep > 1" (click)="wizardStep = wizardStep - 1" class="btn btn-secondary btn-sm flex items-center gap-1">
+              <span>⬅️</span> Anterior
             </button>
             <div *ngIf="wizardStep === 1"></div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
               <button (click)="showWizard = false" class="btn btn-secondary btn-sm">Cancelar</button>
-              <button *ngIf="wizardStep < 4" (click)="advanceWizardStep()" class="btn btn-primary btn-sm">
-                Siguiente ➡️
+              <button *ngIf="wizardStep < 4" (click)="advanceWizardStep()" class="btn btn-primary btn-sm flex items-center gap-1 font-semibold px-4 py-2">
+                <span>Siguiente</span> <span>➡️</span>
               </button>
-              <button *ngIf="wizardStep === 4" (click)="commitWizard()" class="btn btn-primary btn-sm flex items-center gap-1.5 shadow-sm">
-                💾 Confirmar y Guardar Versión
+              <button *ngIf="wizardStep === 4" (click)="commitWizard()" class="btn btn-primary btn-sm flex items-center gap-2 shadow-sm font-semibold px-5 py-2">
+                <span>💾</span> Confirmar y Guardar Versión
               </button>
             </div>
           </div>
@@ -850,6 +887,50 @@ import {
     </div>
   `,
   styles: [`
+    .wizard-fullscreen-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      background: #090d16 !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      overflow: hidden !important;
+    }
+    .wizard-fullscreen-container {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      background: #0b1120 !important;
+      color: #f8fafc !important;
+    }
+    .wizard-header {
+      padding: 1.25rem 2rem !important;
+      border-bottom: 1px solid #1e293b !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #0f172a !important;
+      flex-shrink: 0 !important;
+    }
+    .wizard-body {
+      padding: 2rem !important;
+      overflow-y: auto !important;
+      flex: 1 !important;
+      background: #0b1120 !important;
+    }
+    .wizard-footer {
+      padding: 1.25rem 2rem !important;
+      border-top: 1px solid #1e293b !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      background: #0f172a !important;
+      flex-shrink: 0 !important;
+    }
     .modal-overlay {
       position: fixed !important;
       top: 0 !important;
@@ -892,12 +973,12 @@ import {
       background: #0f172a !important;
     }
     .modal-footer {
-      padding: 1rem 1.5rem !important;
+      padding: 1rem 2rem !important;
       border-top: 1px solid #1e293b !important;
       display: flex !important;
       justify-content: space-between !important;
       align-items: center !important;
-      background: #1e293b !important;
+      background: #0f172a !important;
       flex-shrink: 0 !important;
     }
   `]
