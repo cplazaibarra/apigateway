@@ -82,51 +82,125 @@ import {
         </div>
       </div>
 
-      <!-- Live Test Result Banner (Appears when user clicks 'Probar Pedido Canónico') -->
-      <div *ngIf="previewResult && previewResult.canonical_order" class="bg-slate-900 border border-indigo-500/30 rounded-xl p-5 space-y-4 shadow-md">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="text-lg">🔬</span>
+      <!-- Live Test Result Matrix Table (Appears when user clicks 'Probar Pedido Canónico') -->
+      <div *ngIf="previewResult && previewResult.canonical_order" class="bg-slate-900 border-2 border-indigo-500/40 rounded-xl overflow-hidden shadow-lg space-y-0">
+        <!-- Header banner -->
+        <div class="p-4 bg-slate-950 border-b border-indigo-500/30 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">🔬</span>
             <div>
-              <h4 class="text-sm font-bold text-slate-100">Resultado de la Prueba: Pedido Canónico Estandarizado</h4>
-              <p class="text-xs text-slate-400">Verificación en vivo con las reglas de mapeo asociadas actualmente</p>
+              <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <span>Resultado de Prueba: Matriz de Pedido Estandarizado Canónico</span>
+                <span class="badge badge-success text-[10px] font-mono">PEDIDO #{{ previewResult.canonical_order.order_number }}</span>
+              </h4>
+              <p class="text-xs text-slate-400">Valores consolidados resultantes de tus reglas de mapeo actuales</p>
             </div>
           </div>
-          <button (click)="previewResult = null" class="text-slate-400 hover:text-slate-200 text-xs">✕ Ocultar</button>
+          <button (click)="previewResult = null" class="btn btn-secondary btn-sm text-xs py-1 px-2.5 text-slate-300 hover:text-white">
+            ✕ Ocultar Matriz de Prueba
+          </button>
         </div>
 
-        <!-- KPI Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">Nº Pedido:</span>
-            <div class="text-base font-black text-emerald-400 mt-0.5">#{{ previewResult.canonical_order.order_number }}</div>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">Estado:</span>
-            <div class="text-base font-black text-indigo-400 mt-0.5">{{ previewResult.canonical_order.status }}</div>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">Total:</span>
-            <div class="text-base font-black text-amber-400 mt-0.5">\${{ previewResult.canonical_order.total | number }} {{ previewResult.canonical_order.currency }}</div>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">Items / SKUs:</span>
-            <div class="text-base font-black text-purple-400 mt-0.5">{{ previewResult.canonical_order.items.length }} productos</div>
-          </div>
-        </div>
-
-        <!-- Customer & Shipping Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">👤 Cliente Estandarizado:</span>
-            <div class="text-slate-100 font-bold">{{ previewResult.canonical_order.customer.name || '(Sin nombre)' }}</div>
-            <div class="text-indigo-300">{{ previewResult.canonical_order.customer.email }} | {{ previewResult.canonical_order.customer.phone }}</div>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
-            <span class="text-slate-500 text-[10px] uppercase font-bold">📍 Despacho Estandarizado:</span>
-            <div class="text-emerald-300 font-bold">{{ previewResult.canonical_order.delivery.address || '(Sin dirección)' }}</div>
-            <div class="text-amber-400 font-semibold">{{ previewResult.canonical_order.delivery.city }} <span class="text-slate-400">({{ previewResult.canonical_order.delivery.region }}, {{ previewResult.canonical_order.delivery.country }})</span></div>
-          </div>
+        <!-- Matrix Table of Standardized Fields -->
+        <div class="table-container border-0 rounded-none bg-transparent">
+          <table class="w-full text-left" style="background-color: #0b1120;">
+            <thead style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
+              <tr>
+                <th class="p-3 font-bold uppercase text-xs text-indigo-300 w-1/4">1. Campo Canónico Estandarizado</th>
+                <th class="p-3 font-bold uppercase text-xs text-emerald-400 w-1/2">2. Valor Extraído & Mapeado</th>
+                <th class="p-3 font-bold uppercase text-xs text-amber-300 w-1/4">3. Estado de Validación</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 text-xs font-mono">
+              <!-- Nº Pedido -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">order.order_number (Nº Pedido)</td>
+                <td class="p-3 text-emerald-400 font-bold text-sm">#{{ previewResult.canonical_order.order_number }}</td>
+                <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
+              </tr>
+              <!-- Estado -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">order.status (Estado)</td>
+                <td class="p-3 text-indigo-300 font-bold">{{ previewResult.canonical_order.status }}</td>
+                <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
+              </tr>
+              <!-- Total -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">order.total & currency (Total)</td>
+                <td class="p-3 text-amber-400 font-bold text-sm">\${{ previewResult.canonical_order.total | number }} {{ previewResult.canonical_order.currency }}</td>
+                <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
+              </tr>
+              <!-- Cliente -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">customer.name (Cliente)</td>
+                <td class="p-3 text-slate-200">{{ previewResult.canonical_order.customer.name || '(Sin nombre)' }}</td>
+                <td class="p-3">
+                  <span class="badge" [ngClass]="previewResult.canonical_order.customer.name ? 'badge-success' : 'badge-warning'">
+                    {{ previewResult.canonical_order.customer.name ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Email -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">customer.email (Email)</td>
+                <td class="p-3 text-indigo-300">{{ previewResult.canonical_order.customer.email || '(Sin email)' }}</td>
+                <td class="p-3">
+                  <span class="badge" [ngClass]="previewResult.canonical_order.customer.email ? 'badge-success' : 'badge-warning'">
+                    {{ previewResult.canonical_order.customer.email ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Teléfono -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">customer.phone (Teléfono)</td>
+                <td class="p-3 text-slate-300">{{ previewResult.canonical_order.customer.phone || '(Sin teléfono)' }}</td>
+                <td class="p-3">
+                  <span class="badge" [ngClass]="previewResult.canonical_order.customer.phone ? 'badge-success' : 'badge-warning'">
+                    {{ previewResult.canonical_order.customer.phone ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Dirección -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">delivery.address (Dirección)</td>
+                <td class="p-3 text-emerald-300">{{ previewResult.canonical_order.delivery.address || '(Sin dirección)' }}</td>
+                <td class="p-3">
+                  <span class="badge" [ngClass]="previewResult.canonical_order.delivery.address ? 'badge-success' : 'badge-warning'">
+                    {{ previewResult.canonical_order.delivery.address ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Comuna & Ciudad -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">delivery.city / commune (Comuna)</td>
+                <td class="p-3 text-amber-300 font-bold">
+                  {{ previewResult.canonical_order.delivery.city }}
+                  <span *ngIf="previewResult.canonical_order.delivery.region" class="text-slate-400 font-normal">({{ previewResult.canonical_order.delivery.region }}, {{ previewResult.canonical_order.delivery.country }})</span>
+                </td>
+                <td class="p-3">
+                  <span class="badge" [ngClass]="previewResult.canonical_order.delivery.city ? 'badge-success' : 'badge-warning'">
+                    {{ previewResult.canonical_order.delivery.city ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
+                  </span>
+                </td>
+              </tr>
+              <!-- Items / SKUs -->
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-bold text-slate-300">items[] (Detalle de Productos)</td>
+                <td class="p-3 text-slate-300" colspan="2">
+                  <div *ngFor="let item of previewResult.canonical_order.items; let i = index" class="p-2 bg-slate-950 rounded border border-slate-800 mb-1.5 flex items-center justify-between gap-2">
+                    <div>
+                      <span class="text-purple-400 font-bold">SKU: {{ item.sku }}</span> &nbsp;•&nbsp;
+                      <span class="text-slate-200">{{ item.description }}</span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-emerald-400 font-bold">Cant: {{ item.quantity }}</span> &nbsp;•&nbsp;
+                      <span class="text-amber-400 font-bold">\${{ item.total | number }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
