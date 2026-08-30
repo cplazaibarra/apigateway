@@ -551,37 +551,37 @@ import {
       </div>
 
       <!-- MAPPING WIZARD MODAL (4-STEP GUIDED FLOW) -->
-      <div *ngIf="showWizard" class="modal-backdrop">
-        <div class="modal max-w-3xl bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div *ngIf="showWizard" class="modal-overlay">
+        <div class="modal-container max-w-3xl">
           <!-- Wizard Header -->
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+          <div class="modal-header">
             <div>
               <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
                 <span>🪄</span> Asistente de Mapeo (Mapping Wizard)
               </h3>
               <p class="text-xs text-slate-400">Configura, prueba con un pedido real y guarda con control de versiones</p>
             </div>
-            <button (click)="showWizard = false" class="text-slate-400 hover:text-slate-200">✕</button>
+            <button (click)="showWizard = false" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
           </div>
 
           <!-- Wizard Stepper Indicators -->
-          <div class="grid grid-cols-4 gap-2 flex-shrink-0 text-center text-xs">
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 1 ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
+          <div class="grid grid-cols-4 gap-2 p-4 bg-slate-900 border-b border-slate-800 text-center text-xs">
+            <div class="p-2 rounded border" [ngClass]="wizardStep === 1 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
               1. Payload Muestra
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 2 ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
+            <div class="p-2 rounded border" [ngClass]="wizardStep === 2 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
               2. Sugerencias
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 3 ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
+            <div class="p-2 rounded border" [ngClass]="wizardStep === 3 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
               3. Prueba & Preview
             </div>
-            <div class="p-2 rounded border" [ngClass]="wizardStep === 4 ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
+            <div class="p-2 rounded border" [ngClass]="wizardStep === 4 ? 'bg-indigo-950/80 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-500'">
               4. Guardar Versión
             </div>
           </div>
 
           <!-- Wizard Body Content -->
-          <div class="space-y-4 text-xs overflow-y-auto flex-grow pr-1">
+          <div class="modal-body space-y-4 text-xs">
             <!-- STEP 1: SAMPLE PAYLOAD -->
             <div *ngIf="wizardStep === 1" class="space-y-3">
               <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
@@ -601,7 +601,7 @@ import {
 
               <div *ngIf="samplePayload" class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-[11px] font-bold text-slate-400 uppercase mb-1">Vista Previa de Claves del Payload:</div>
-                <div class="font-mono text-[11px] text-slate-300 max-h-40 overflow-y-auto bg-slate-900 p-2 rounded">
+                <div class="font-mono text-[11px] text-slate-300 max-h-48 overflow-y-auto bg-slate-900 p-2.5 rounded border border-slate-800">
                   <div *ngFor="let item of flattenedSampleKeys.slice(0, 15)">
                     <span class="text-indigo-400">{{ item.path }}:</span> <span class="text-slate-400">{{ item.value }}</span>
                   </div>
@@ -624,25 +624,25 @@ import {
                 </button>
               </div>
 
-              <div *ngIf="autoSuggestions.length > 0" class="border border-slate-800 rounded-lg overflow-hidden">
+              <div *ngIf="autoSuggestions.length > 0" class="border border-slate-800 rounded-lg overflow-hidden bg-slate-950">
                 <div class="max-h-64 overflow-y-auto">
                   <table class="w-full text-left">
-                    <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 text-[11px]">
+                    <thead class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[11px]">
                       <tr>
-                        <th class="p-2 w-8"><input type="checkbox" (change)="toggleAllSuggestions($event)" checked /></th>
-                        <th class="p-2">Campo Canónico</th>
-                        <th class="p-2">Ruta Origen</th>
-                        <th class="p-2">Transformación</th>
-                        <th class="p-2">Confianza</th>
+                        <th class="p-2.5 w-8"><input type="checkbox" (change)="toggleAllSuggestions($event)" checked /></th>
+                        <th class="p-2.5">Campo Canónico</th>
+                        <th class="p-2.5">Ruta Origen</th>
+                        <th class="p-2.5">Transformación</th>
+                        <th class="p-2.5">Confianza</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/60 font-mono text-[11px]">
-                      <tr *ngFor="let s of autoSuggestions; let i = index" class="hover:bg-slate-950/40">
-                        <td class="p-2"><input type="checkbox" [(ngModel)]="selectedSuggestions[i]" /></td>
-                        <td class="p-2 font-bold text-indigo-400">{{ s.canonical_field }}</td>
-                        <td class="p-2 text-emerald-400">{{ s.source_path }}</td>
-                        <td class="p-2 text-slate-300">{{ s.transformation || 'COPY' }}</td>
-                        <td class="p-2">
+                    <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
+                      <tr *ngFor="let s of autoSuggestions; let i = index" class="hover:bg-slate-900/60">
+                        <td class="p-2.5"><input type="checkbox" [(ngModel)]="selectedSuggestions[i]" /></td>
+                        <td class="p-2.5 font-bold text-indigo-400">{{ s.canonical_field }}</td>
+                        <td class="p-2.5 text-emerald-400">{{ s.source_path }}</td>
+                        <td class="p-2.5 text-slate-300">{{ s.transformation || 'COPY' }}</td>
+                        <td class="p-2.5">
                           <span class="badge badge-success text-[9px]">{{ s.confidence * 100 | number:'1.0-0' }}%</span>
                         </td>
                       </tr>
@@ -724,7 +724,7 @@ import {
           </div>
 
           <!-- Wizard Footer Navigation Buttons -->
-          <div class="flex items-center justify-between pt-3 border-t border-slate-800 flex-shrink-0">
+          <div class="modal-footer">
             <button *ngIf="wizardStep > 1" (click)="wizardStep = wizardStep - 1" class="btn btn-secondary btn-sm">
               ⬅️ Anterior
             </button>
@@ -744,16 +744,16 @@ import {
       </div>
 
       <!-- EDIT RULE / ADD MAPPING MODAL -->
-      <div *ngIf="showRuleModal" class="modal-backdrop">
-        <div class="modal max-w-lg bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div *ngIf="showRuleModal" class="modal-overlay">
+        <div class="modal-container max-w-lg">
+          <div class="modal-header">
             <h3 class="text-base font-bold text-slate-100">
               {{ editingRule.id ? '✏️ Editar Regla de Mapeo' : '➕ Nueva Regla de Mapeo' }}
             </h3>
-            <button (click)="showRuleModal = false" class="text-slate-400 hover:text-slate-200">✕</button>
+            <button (click)="showRuleModal = false" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
           </div>
 
-          <div class="space-y-3 text-xs">
+          <div class="modal-body space-y-3.5 text-xs">
             <div>
               <label class="block text-slate-400 mb-1">Campo Canónico Objetivo:</label>
               <select [(ngModel)]="editingRule.canonical_field" class="form-select text-xs py-1.5 px-3 bg-slate-950 border-slate-800 w-full">
@@ -802,26 +802,26 @@ import {
                 <span class="text-slate-300">Habilitado</span>
               </label>
             </div>
+          </div>
 
-            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
-              <button (click)="showRuleModal = false" class="btn btn-secondary btn-sm">Cancelar</button>
-              <button (click)="saveSingleRule()" class="btn btn-primary btn-sm">Guardar Regla</button>
-            </div>
+          <div class="modal-footer">
+            <button (click)="showRuleModal = false" class="btn btn-secondary btn-sm">Cancelar</button>
+            <button (click)="saveSingleRule()" class="btn btn-primary btn-sm">Guardar Regla</button>
           </div>
         </div>
       </div>
 
       <!-- VERSION HISTORY MODAL -->
-      <div *ngIf="showVersionModal" class="modal-backdrop">
-        <div class="modal max-w-xl bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div *ngIf="showVersionModal" class="modal-overlay">
+        <div class="modal-container max-w-xl">
+          <div class="modal-header">
             <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
               <span>🕒</span> Historial de Versiones y Rollback
             </h3>
-            <button (click)="showVersionModal = false" class="text-slate-400 hover:text-slate-200">✕</button>
+            <button (click)="showVersionModal = false" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
           </div>
 
-          <div class="space-y-2 max-h-72 overflow-y-auto">
+          <div class="modal-body space-y-2">
             <div *ngFor="let v of versions()" class="p-3 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between text-xs">
               <div>
                 <div class="font-bold text-slate-200 flex items-center gap-2">
@@ -842,7 +842,7 @@ import {
             </div>
           </div>
 
-          <div class="flex items-center justify-end pt-3 border-t border-slate-800">
+          <div class="modal-footer">
             <button (click)="showVersionModal = false" class="btn btn-secondary btn-sm">Cerrar</button>
           </div>
         </div>
@@ -850,9 +850,55 @@ import {
     </div>
   `,
   styles: [`
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem;
+    .modal-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(15, 23, 42, 0.8) !important;
+      backdrop-filter: blur(6px) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 99999 !important;
+      padding: 1.5rem !important;
+    }
+    .modal-container {
+      background: #0f172a !important;
+      border-radius: 16px !important;
+      width: 100% !important;
+      max-height: 88vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+      overflow: hidden !important;
+      border: 1px solid #334155 !important;
+      color: #f8fafc !important;
+    }
+    .modal-header {
+      padding: 1.25rem 1.5rem !important;
+      border-bottom: 1px solid #1e293b !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #1e293b !important;
+      flex-shrink: 0 !important;
+    }
+    .modal-body {
+      padding: 1.5rem !important;
+      overflow-y: auto !important;
+      flex: 1 !important;
+      background: #0f172a !important;
+    }
+    .modal-footer {
+      padding: 1rem 1.5rem !important;
+      border-top: 1px solid #1e293b !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      background: #1e293b !important;
+      flex-shrink: 0 !important;
     }
   `]
 })
