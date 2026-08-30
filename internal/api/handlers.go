@@ -394,6 +394,19 @@ func (h *Handlers) ToggleIntegrationEnvironment(w http.ResponseWriter, r *http.R
 	respondJSON(w, http.StatusOK, map[string]interface{}{"id": id, "environment": newEnv})
 }
 
+func (h *Handlers) ToggleIntegrationStatus(w http.ResponseWriter, r *http.Request) {
+	claims := GetUserClaims(r)
+	id := chi.URLParam(r, "id")
+	newStatus, err := h.integrationSvc.ToggleStatus(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	h.auditSvc.Log(r.Context(), claims.UserID, claims.Email, "TOGGLE_INTEGRATION_STATUS", "INTEGRATION", id, GetClientIP(r), nil, map[string]string{"status": newStatus})
+	respondJSON(w, http.StatusOK, map[string]interface{}{"id": id, "status": newStatus})
+}
+
 func (h *Handlers) TestConnection(w http.ResponseWriter, r *http.Request) {
 	claims := GetUserClaims(r)
 	id := chi.URLParam(r, "id")

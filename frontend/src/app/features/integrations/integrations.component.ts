@@ -109,7 +109,17 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
 
                 <td>
                   <div class="flex items-center gap-2">
-                    <span class="badge" [class.badge-success]="it.status === 'ACTIVE'" [class.badge-danger]="it.status === 'ERROR'" [class.badge-muted]="it.status === 'DISABLED'">
+                    <button *ngIf="auth.isOperator()"
+                            (click)="confirmToggleStatus(it)"
+                            class="badge cursor-pointer transition hover:opacity-80 active:scale-95 shadow-sm"
+                            [class.badge-success]="it.status === 'ACTIVE'"
+                            [class.badge-danger]="it.status === 'ERROR'"
+                            [class.badge-muted]="it.status === 'DISABLED'"
+                            [title]="it.status === 'ACTIVE' ? 'Hacer clic para DESHABILITAR esta integración (pedirá confirmación)' : 'Hacer clic para ACTIVAR esta integración'">
+                      <span class="status-dot" [class.active]="it.status === 'ACTIVE'" [class.error]="it.status === 'ERROR'" [class.disabled]="it.status === 'DISABLED'"></span>
+                      {{ it.status }}
+                    </button>
+                    <span *ngIf="!auth.isOperator()" class="badge" [class.badge-success]="it.status === 'ACTIVE'" [class.badge-danger]="it.status === 'ERROR'" [class.badge-muted]="it.status === 'DISABLED'">
                       <span class="status-dot" [class.active]="it.status === 'ACTIVE'" [class.error]="it.status === 'ERROR'" [class.disabled]="it.status === 'DISABLED'"></span>
                       {{ it.status }}
                     </span>
@@ -488,6 +498,28 @@ export class IntegrationsComponent implements OnInit {
         }
       },
       error: () => this.toast.error('Error al cambiar ambiente de ejecución')
+    });
+  }
+
+  confirmToggleStatus(it: Integration) {
+    const isActivating = it.status === 'DISABLED';
+    const actionText = isActivating ? 'ACTIVAR' : 'DESHABILITAR';
+    const msg = isActivating
+      ? `¿Desea ACTIVAR la integración "${it.name}"? Se reanudará la conexión.`
+      : `¿Está seguro de DESHABILITAR la integración "${it.name}"? No se procesarán pedidos ni sincronizaciones mientras esté deshabilitada.`;
+
+    if (!confirm(msg)) return;
+
+    this.api.toggleIntegrationStatus(it.id).subscribe({
+      next: res => {
+        it.status = res.status;
+        if (res.status === 'DISABLED') {
+          this.toast.info(`Integración "${it.name}" deshabilitada`);
+        } else {
+          this.toast.success(`Integración "${it.name}" activada correctamente`);
+        }
+      },
+      error: () => this.toast.error(`Error al ${actionText.toLowerCase()} integración`)
     });
   }
 

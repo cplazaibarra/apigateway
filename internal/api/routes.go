@@ -102,6 +102,7 @@ func SetupRouter(h *Handlers, authSvc *service.AuthService) *chi.Mux {
 					r.Post("/integrations/{id}/sync", h.TriggerManualSync)
 					r.Post("/integrations/{id}/toggle-polling", h.ToggleIntegrationPolling)
 					r.Post("/integrations/{id}/toggle-environment", h.ToggleIntegrationEnvironment)
+					r.Post("/integrations/{id}/toggle-status", h.ToggleIntegrationStatus)
 					r.Post("/smtp/test", h.SendTestEmail)
 
 					// Dynamic Field Mapping (Test & Edit & Restore)

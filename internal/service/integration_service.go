@@ -220,6 +220,20 @@ func (s *IntegrationService) ToggleEnvironment(ctx context.Context, id string) (
 	return newVal, err
 }
 
+func (s *IntegrationService) ToggleStatus(ctx context.Context, id string) (string, error) {
+	var current string
+	err := s.db.QueryRowContext(ctx, "SELECT status FROM integrations WHERE id = $1", id).Scan(&current)
+	if err != nil {
+		return "", err
+	}
+	newStatus := "DISABLED"
+	if current == "DISABLED" {
+		newStatus = "ACTIVE"
+	}
+	_, err = s.db.ExecContext(ctx, "UPDATE integrations SET status = $1, updated_at = NOW() WHERE id = $2", newStatus, id)
+	return newStatus, err
+}
+
 func (s *IntegrationService) Delete(ctx context.Context, id string) error {
 	_, err := s.db.ExecContext(ctx, "DELETE FROM integrations WHERE id = $1", id)
 	return err

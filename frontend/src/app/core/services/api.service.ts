@@ -75,6 +75,10 @@ export class ApiService {
     return this.http.post<{ id: string; environment: 'PRODUCTION' | 'TEST' }>(`${this.baseUrl}/integrations/${id}/toggle-environment`, {});
   }
 
+  toggleIntegrationStatus(id: string): Observable<{ id: string; status: 'ACTIVE' | 'ERROR' | 'DISABLED' }> {
+    return this.http.post<{ id: string; status: 'ACTIVE' | 'ERROR' | 'DISABLED' }>(`${this.baseUrl}/integrations/${id}/toggle-status`, {});
+  }
+
   testConnection(id: string): Observable<ProviderTestResult> {
     return this.http.post<ProviderTestResult>(`${this.baseUrl}/integrations/${id}/test`, {});
   }
