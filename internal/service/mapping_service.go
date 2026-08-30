@@ -290,6 +290,18 @@ func (s *MappingService) SaveMappings(ctx context.Context, integrationID string,
 		return nil, fmt.Errorf("error creando versión de snapshot: %w", err)
 	}
 
+	// 4.1 Retain only the latest 5 versions per integration (cleanup older versions)
+	_, _ = tx.ExecContext(ctx, `
+		DELETE FROM mapping_versions
+		WHERE integration_id = $1
+		  AND id NOT IN (
+			SELECT id FROM mapping_versions
+			WHERE integration_id = $1
+			ORDER BY version DESC
+			LIMIT 5
+		  )
+	`, integrationID)
+
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}

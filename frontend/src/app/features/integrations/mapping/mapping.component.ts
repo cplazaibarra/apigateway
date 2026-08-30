@@ -533,6 +533,8 @@ export class DynamicMappingComponent implements OnInit {
         this.samplePayload = res.raw_payload;
         this.flattenSample(res.raw_payload);
         this.toast.success('Pedido de muestra obtenido correctamente de la tienda');
+        // Auto-run test to immediately validate and show mapping matrix
+        this.runValidationTest();
       },
       error: (err) => {
         this.loadingSample.set(false);
@@ -614,8 +616,10 @@ export class DynamicMappingComponent implements OnInit {
         this.savingMappings.set(false);
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);
-        this.toast.success(`✅ ${mappings.length} reglas de mapeo guardadas exitosamente`);
+        this.toast.success(`✅ Mapeo guardado exitosamente (${mappings.length} reglas activas)`);
         this.loadVersions();
+        // Auto-run test to refresh the canonical order preview
+        this.runValidationTest();
       },
       error: (err) => {
         this.savingMappings.set(false);
