@@ -571,21 +571,37 @@ import {
           </div>
 
           <!-- Wizard Stepper Indicators -->
-          <div class="grid grid-cols-4 gap-3 p-4 bg-slate-900 border-b border-slate-800 text-center text-xs">
-            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 1 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
-              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 1 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">1</span>
+          <div style="display: flex; gap: 1rem; padding: 1rem 2rem; background: #0f172a; border-bottom: 1px solid #1e293b; color: #f8fafc;">
+            <div style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.8125rem;"
+                 [style.background]="wizardStep === 1 ? '#1e1b4b' : '#020617'"
+                 [style.border]="wizardStep === 1 ? '1px solid #6366f1' : '1px solid #1e293b'"
+                 [style.color]="wizardStep === 1 ? '#a5b4fc' : '#64748b'"
+                 [style.font-weight]="wizardStep === 1 ? 'bold' : 'normal'">
+              <span style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; background: #6366f1; color: white;">1</span>
               <span>1. Payload Muestra</span>
             </div>
-            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 2 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
-              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 2 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">2</span>
+            <div style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.8125rem;"
+                 [style.background]="wizardStep === 2 ? '#1e1b4b' : '#020617'"
+                 [style.border]="wizardStep === 2 ? '1px solid #6366f1' : '1px solid #1e293b'"
+                 [style.color]="wizardStep === 2 ? '#a5b4fc' : '#64748b'"
+                 [style.font-weight]="wizardStep === 2 ? 'bold' : 'normal'">
+              <span style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; background: #334155; color: white;">2</span>
               <span>2. Sugerencias Detectadas</span>
             </div>
-            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 3 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
-              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 3 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">3</span>
+            <div style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.8125rem;"
+                 [style.background]="wizardStep === 3 ? '#1e1b4b' : '#020617'"
+                 [style.border]="wizardStep === 3 ? '1px solid #6366f1' : '1px solid #1e293b'"
+                 [style.color]="wizardStep === 3 ? '#a5b4fc' : '#64748b'"
+                 [style.font-weight]="wizardStep === 3 ? 'bold' : 'normal'">
+              <span style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; background: #334155; color: white;">3</span>
               <span>3. Prueba & Preview Canónico</span>
             </div>
-            <div class="p-3 rounded-lg border flex items-center justify-center gap-2" [ngClass]="wizardStep === 4 ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 font-bold shadow-sm' : 'bg-slate-950/80 border-slate-800 text-slate-500'">
-              <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" [ngClass]="wizardStep === 4 ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'">4</span>
+            <div style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.8125rem;"
+                 [style.background]="wizardStep === 4 ? '#1e1b4b' : '#020617'"
+                 [style.border]="wizardStep === 4 ? '1px solid #6366f1' : '1px solid #1e293b'"
+                 [style.color]="wizardStep === 4 ? '#a5b4fc' : '#64748b'"
+                 [style.font-weight]="wizardStep === 4 ? 'bold' : 'normal'">
+              <span style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; background: #334155; color: white;">4</span>
               <span>4. Guardar Nueva Versión</span>
             </div>
           </div>
@@ -596,84 +612,115 @@ import {
             <div *ngIf="wizardStep === 1" class="space-y-4">
               <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
                 <div class="font-bold text-slate-100 text-base flex items-center gap-2">
-                  <span>📥</span> Paso 1: Obtener Pedido de Muestra Real
+                  <span>📥</span> Paso 1: Explorar Datos del Proveedor y Asociar Campos
                 </div>
                 <p class="text-slate-400 text-xs">
-                  Para poder inferir los campos automáticamente y validar las transformaciones con datos 100% reales, obtenemos un pedido de muestra de la tienda externa <strong>{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</strong>.
+                  A continuación tienes todas las rutas que devuelve la API externa de <strong>{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</strong> y el valor que contiene cada una. Selecciona en la <strong>Columna 3</strong> a qué campo estándar (Dirección, Comuna, SKU, Total, etc.) corresponde cada dato.
                 </p>
                 <div class="pt-2 flex items-center gap-4">
                   <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm flex items-center gap-2 px-4 py-2 font-semibold">
                     <span>⚡</span> {{ loadingSample() ? 'Consultando API en Vivo...' : 'Consultar Pedido en Vivo del Proveedor' }}
                   </button>
                   <span *ngIf="samplePayload" class="text-emerald-400 font-bold text-xs flex items-center gap-1 bg-emerald-950/40 px-3 py-1.5 rounded border border-emerald-500/30">
-                    ✅ Payload cargado correctamente ({{ flattenedSampleKeys.length }} nodos detectados)
+                    ✅ Payload cargado correctamente ({{ flattenedSampleKeys.length }} rutas detectadas)
                   </span>
                 </div>
               </div>
 
+              <!-- 3-COLUMN STRUCTURED MAPPING TABLE -->
               <div *ngIf="samplePayload" class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-sm space-y-0">
                 <div class="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2">
                     <span class="text-base">📋</span>
-                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Matriz de Asignación y Selección de Datos Extraídos</span>
+                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Matriz de Asociación de Datos: Ruta API ➔ Valor ➔ Campo Estándar</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="badge badge-primary text-[11px] font-mono">
-                      {{ flattenedSampleKeys.length }} nodos detectados
+                      {{ flattenedSampleKeys.length }} rutas de la API
                     </span>
                     <span class="badge badge-success text-[11px] font-mono">
-                      {{ activeMappings().length }} reglas asignadas
+                      {{ activeMappings().length }} reglas activas
                     </span>
                   </div>
                 </div>
 
-                <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                  <p>
-                    💡 <strong>Cómo funciona:</strong> En la <strong>Columna 3</strong> ves el dato real extraído. Selecciona en el selector de la <strong>Columna 1</strong> a qué campo estándar del pedido corresponde y haz clic en <strong>⚡ Asignar</strong>.
-                  </p>
-                </div>
-
-                <div class="table-container border-0 rounded-none bg-transparent max-h-[55vh] overflow-y-auto">
-                  <table class="w-full text-left">
-                    <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800 text-xs sticky top-0 z-10">
+                <div class="table-container border-0 rounded-none bg-transparent max-h-[60vh] overflow-y-auto">
+                  <table class="w-full text-left" style="background-color: #0b1120; color: #f8fafc;">
+                    <thead class="sticky top-0 z-10" style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
                       <tr>
-                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">1. Campo del Pedido Estandarizado (Objetivo)</th>
-                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">2. Ruta de Origen (Source Path)</th>
-                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">3. Valor Extraído en Tienda (Muestra)</th>
+                        <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-indigo-300">
+                          1. Ruta / Dato que da la API (Source Path)
+                        </th>
+                        <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-emerald-400">
+                          2. Valor que envía en esa Ruta
+                        </th>
+                        <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-amber-300">
+                          3. Asociar a Campo Estandarizado (Objetivo)
+                        </th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/80 font-mono text-xs">
-                      <tr *ngFor="let item of flattenedSampleKeys" class="hover:bg-slate-900/50 transition">
-                        <!-- Column 1: Canonical Field Selector & Action -->
-                        <td class="p-3 align-middle">
-                          <div class="space-y-1.5">
-                            <div class="flex items-center gap-2">
-                              <select [(ngModel)]="sampleKeyAssignments[item.path]" class="form-select text-xs py-1 px-2 bg-slate-900 border-slate-800 text-slate-200 rounded w-full">
-                                <option value="">-- Seleccionar Campo Canónico --</option>
-                                <option *ngFor="let cf of canonicalFields()" [value]="cf.id">
-                                  {{ cf.id }} ({{ cf.name }})
-                                </option>
-                              </select>
-                              <button (click)="assignSampleKeyToCanonical(item.path)" [disabled]="!sampleKeyAssignments[item.path]" class="btn btn-primary btn-sm text-[11px] py-1 px-2.5 whitespace-nowrap" title="Guardar mapeo directo">
-                                ⚡ Asignar
-                              </button>
-                            </div>
-                            <div *ngIf="getAssignedCanonicalForPath(item.path)" class="text-[11px] text-emerald-400 flex items-center gap-1 font-sans">
-                              <span>✅ Asignado actualmente a:</span> <strong class="font-mono text-indigo-300">{{ getAssignedCanonicalForPath(item.path) }}</strong>
-                            </div>
-                          </div>
-                        </td>
-
-                        <!-- Column 2: JSON Source Path -->
-                        <td class="p-3 align-middle">
-                          <span class="text-indigo-300 font-bold bg-slate-900 px-2 py-1 rounded border border-indigo-500/20 inline-block">
+                    <tbody class="divide-y divide-slate-800 font-mono text-xs">
+                      <tr *ngFor="let item of flattenedSampleKeys" class="hover:bg-slate-900/60 transition" style="border-bottom: 1px solid #1e293b;">
+                        <!-- Columna 1: Ruta de la API -->
+                        <td class="p-3.5 align-middle">
+                          <span class="text-indigo-300 font-bold bg-slate-900 px-2.5 py-1.5 rounded border border-indigo-500/30 inline-block">
                             {{ item.path }}
                           </span>
                         </td>
 
-                        <!-- Column 3: Extracted Value -->
-                        <td class="p-3 align-middle text-emerald-400 font-semibold break-all bg-slate-950/40">
+                        <!-- Columna 2: Valor enviado en esa ruta -->
+                        <td class="p-3.5 align-middle text-emerald-400 font-semibold break-all bg-slate-950/50">
                           {{ item.value }}
+                        </td>
+
+                        <!-- Columna 3: Selector de Campo Estandarizado -->
+                        <td class="p-3.5 align-middle font-sans">
+                          <div class="space-y-1.5">
+                            <div class="flex items-center gap-2">
+                              <select [(ngModel)]="sampleKeyAssignments[item.path]"
+                                      class="form-select text-xs py-1.5 px-3 bg-slate-900 border border-slate-700 text-slate-100 rounded w-full focus:border-indigo-500">
+                                <option value="">-- Asociar a un campo canónico --</option>
+                                <optgroup label="📦 Datos del Pedido">
+                                  <option value="order.order_number">order.order_number (Nº de Pedido)</option>
+                                  <option value="order.id">order.id (ID Externo)</option>
+                                  <option value="order.status">order.status (Estado del Pedido)</option>
+                                  <option value="order.total">order.total (Monto Total)</option>
+                                  <option value="order.currency">order.currency (Moneda)</option>
+                                  <option value="order.created_at">order.created_at (Fecha de Creación)</option>
+                                </optgroup>
+                                <optgroup label="👤 Datos del Cliente">
+                                  <option value="customer.name">customer.name (Nombre del Cliente)</option>
+                                  <option value="customer.email">customer.email (Email de Contacto)</option>
+                                  <option value="customer.phone">customer.phone (Teléfono)</option>
+                                  <option value="customer.id">customer.id (RUT / Identificador)</option>
+                                </optgroup>
+                                <optgroup label="📍 Despacho y Ubicación">
+                                  <option value="delivery.address">delivery.address (Dirección de Despacho)</option>
+                                  <option value="delivery.city">delivery.city (Ciudad de Entrega)</option>
+                                  <option value="delivery.commune">delivery.commune (Comuna Específica)</option>
+                                  <option value="delivery.region">delivery.region (Región / Estado)</option>
+                                  <option value="delivery.country">delivery.country (País)</option>
+                                  <option value="delivery.postal_code">delivery.postal_code (Código Postal)</option>
+                                </optgroup>
+                                <optgroup label="🛒 Productos / Ítems">
+                                  <option value="items[].sku">items[].sku (SKU del Producto)</option>
+                                  <option value="items[].description">items[].description (Nombre/Descripción)</option>
+                                  <option value="items[].quantity">items[].quantity (Cantidad)</option>
+                                  <option value="items[].unit_price">items[].unit_price (Precio Unitario)</option>
+                                  <option value="items[].total">items[].total (Total de Línea)</option>
+                                </optgroup>
+                              </select>
+                              <button (click)="assignSampleKeyToCanonical(item.path)"
+                                      [disabled]="!sampleKeyAssignments[item.path]"
+                                      class="btn btn-primary btn-sm text-xs py-1.5 px-3 font-semibold whitespace-nowrap shadow-sm"
+                                      title="Guardar asociación">
+                                ⚡ Asociar
+                              </button>
+                            </div>
+                            <div *ngIf="getAssignedCanonicalForPath(item.path)" class="text-[11px] text-emerald-400 flex items-center gap-1 font-sans">
+                              <span>✅ Asociado a:</span> <strong class="font-mono text-indigo-300">{{ getAssignedCanonicalForPath(item.path) }}</strong>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
