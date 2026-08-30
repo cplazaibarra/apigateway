@@ -44,7 +44,7 @@ func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter)
 		JOIN customers c ON i.customer_id = c.id
 		WHERE ($1 = '' OR i.customer_id = $1)
 		  AND ($2 = '' OR i.provider = $2)
-		  AND ($3 = '' OR i.status = $3)
+		  AND ($3 = '' OR i.status = ANY(string_to_array($3, ',')))
 		  AND ($4 = '' OR i.name ILIKE '%' || $4 || '%' OR c.name ILIKE '%' || $4 || '%')
 		ORDER BY i.name ASC
 	`

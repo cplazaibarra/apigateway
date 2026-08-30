@@ -34,12 +34,25 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
             <option value="BSALE">BSALE</option>
           </select>
 
-          <select [(ngModel)]="selectedStatus" (change)="loadIntegrations()" class="form-select text-xs py-1.5 px-3 w-auto bg-slate-900 border-slate-800">
-            <option value="">Todos los Estados</option>
-            <option value="ACTIVE">Activas</option>
-            <option value="ERROR">Con Error</option>
-            <option value="DISABLED">Deshabilitadas</option>
-          </select>
+          <!-- Checkbox Filters for Status (Activas checked by default) -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs">
+            <span class="text-slate-500 font-bold uppercase text-[10px]">Mostrar:</span>
+            
+            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-300 font-semibold hover:text-emerald-200">
+              <input type="checkbox" [(ngModel)]="filterActive" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-emerald-500" />
+              <span>Activas</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer text-amber-300 font-semibold hover:text-amber-200">
+              <input type="checkbox" [(ngModel)]="filterError" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-amber-500" />
+              <span>Con Error</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-400 font-semibold hover:text-slate-300">
+              <input type="checkbox" [(ngModel)]="filterDisabled" (change)="loadIntegrations()" class="rounded border-slate-700 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
+              <span>Deshabilitadas</span>
+            </label>
+          </div>
 
           <button *ngIf="auth.isAdmin()" (click)="openCreateModal()" class="btn btn-primary btn-sm flex items-center gap-1.5">
             <span>➕</span> Nueva Integración
@@ -384,8 +397,12 @@ export class IntegrationsComponent implements OnInit {
   selectedIntegrationForMapping = signal<Integration | null>(null);
 
   selectedProvider = '';
-  selectedStatus = '';
   searchQuery = '';
+
+  // Status Checkboxes (Default: only active integrations visible)
+  filterActive = true;
+  filterError = false;
+  filterDisabled = false;
 
   showFormModal = signal(false);
   isEditing = signal(false);
@@ -404,8 +421,19 @@ export class IntegrationsComponent implements OnInit {
   loadIntegrations() {
     const filters: any = {};
     if (this.selectedProvider) filters.provider = this.selectedProvider;
-    if (this.selectedStatus) filters.status = this.selectedStatus;
     if (this.searchQuery) filters.search = this.searchQuery;
+
+    // Calculate selected status filters
+    const selectedStatuses: string[] = [];
+    if (this.filterActive) selectedStatuses.push('ACTIVE');
+    if (this.filterError) selectedStatuses.push('ERROR');
+    if (this.filterDisabled) selectedStatuses.push('DISABLED');
+
+    if (selectedStatuses.length > 0 && selectedStatuses.length < 3) {
+      filters.status = selectedStatuses.join(',');
+    } else if (selectedStatuses.length === 0) {
+      filters.status = 'NONE'; // Show nothing if all checkboxes are unchecked
+    }
 
     this.api.getIntegrations(filters).subscribe({
       next: res => this.integrations.set(res || []),
