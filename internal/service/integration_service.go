@@ -179,6 +179,10 @@ func (s *IntegrationService) Update(ctx context.Context, id string, req UpdateIn
 		req.Environment = existing.Environment
 	}
 
+	if req.Status == "" {
+		req.Status = existing.Status
+	}
+
 	if req.PollingIntervalMinutes <= 0 {
 		req.PollingIntervalMinutes = existing.PollingIntervalMinutes
 	}
