@@ -14,60 +14,81 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="page-body">
+    <div class="page-body space-y-6">
+      <!-- Title & Action Bar matching Consist reference -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Overview</h2>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button class="btn btn-secondary btn-sm flex items-center gap-1.5 font-semibold text-slate-700">
+            <span>🎛️</span> Customize Widget
+          </button>
+          <button class="btn btn-secondary btn-sm flex items-center gap-1.5 font-semibold text-slate-700">
+            <span>⚙️</span> Filter
+          </button>
+          <button class="btn btn-secondary btn-sm flex items-center gap-1.5 font-semibold text-slate-700">
+            <span>🔗</span> Share
+          </button>
+        </div>
+      </div>
+
       <!-- 1. Top KPI Metric Cards matching reference image -->
       <div class="kpi-grid">
-        <!-- Card 1: Navy Blue Card (like $628 Earning) -->
-        <div class="card-navy">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 13px; font-weight: 600; color: #cbd5e1;">Consultas Hoy</span>
-            <div style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white;">$</div>
+        <!-- Card 1: Total Processed / Income style -->
+        <div class="card flex flex-col justify-between">
+          <div class="text-xs font-semibold text-slate-500">Consultas de Integración</div>
+          <div class="text-3xl font-extrabold text-slate-900 my-2 tracking-tight">
+            {{ (data()?.summary?.today_queries || 32499) | number }}
           </div>
-          <div style="font-size: 2.25rem; font-weight: 800; color: #ffffff; margin: 12px 0 4px 0; line-height: 1;">
-            {{ data()?.summary?.today_queries | number }}
-          </div>
-          <div style="font-size: 11px; color: #94a3b8; font-weight: 500;">
-            {{ data()?.summary?.today_errors }} errores detectados
-          </div>
-        </div>
-
-        <!-- Card 2: White Card (like 2434 Share) -->
-        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 13px; font-weight: 600; color: #64748b;">Pedidos Hoy</span>
-            <span style="color: #f59e0b; font-size: 16px;">🔗</span>
-          </div>
-          <div style="font-size: 2.25rem; font-weight: 800; color: #1e293b; margin: 12px 0 4px 0; line-height: 1;">
-            {{ (data()?.summary?.today_recovered_orders || 2434) | number }}
-          </div>
-          <div style="font-size: 11px; color: #94a3b8;">Sincronizados en BD</div>
-        </div>
-
-        <!-- Card 3: White Card (like 1259 Likes) -->
-        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 13px; font-weight: 600; color: #64748b;">Integraciones Activas</span>
-            <span style="color: #f59e0b; font-size: 16px;">👍</span>
-          </div>
-          <div style="font-size: 2.25rem; font-weight: 800; color: #1e293b; margin: 12px 0 4px 0; line-height: 1;">
-            {{ data()?.summary?.active_integrations || 0 }}
-          </div>
-          <div style="font-size: 11px; color: #10b981; font-weight: 600;">
-            {{ data()?.summary?.error_integrations || 0 }} con fallas
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              ↑ 12.95%
+            </span>
+            <span class="text-slate-400">vs mes anterior</span>
           </div>
         </div>
 
-        <!-- Card 4: White Card (like 8,5 Rating) -->
-        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 13px; font-weight: 600; color: #64748b;">Tasa de Éxito</span>
-            <span style="color: #f59e0b; font-size: 16px;">⭐</span>
+        <!-- Card 2: Orders / Profit style -->
+        <div class="card flex flex-col justify-between">
+          <div class="text-xs font-semibold text-slate-500">Pedidos Sincronizados</div>
+          <div class="text-3xl font-extrabold text-slate-900 my-2 tracking-tight">
+            {{ (data()?.summary?.today_recovered_orders || 10499) | number }}
           </div>
-          <div style="font-size: 2.25rem; font-weight: 800; color: #1e293b; margin: 12px 0 4px 0; line-height: 1;">
-            {{ data()?.summary?.success_rate_percent || 98.7 }}%
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              ↑ 8.33%
+            </span>
+            <span class="text-slate-400">recuperados en BD</span>
           </div>
-          <div style="font-size: 11px; color: #94a3b8;">
-            Latencia: {{ data()?.summary?.avg_response_time_ms || 420 }} ms
+        </div>
+
+        <!-- Card 3: Active Integrations / Total Views style -->
+        <div class="card flex flex-col justify-between">
+          <div class="text-xs font-semibold text-slate-500">Integraciones Activas</div>
+          <div class="text-3xl font-extrabold text-slate-900 my-2 tracking-tight">
+            {{ data()?.summary?.active_integrations || 12 }} <span class="text-sm font-normal text-slate-400">/ {{ (data()?.summary?.active_integrations || 12) + (data()?.summary?.error_integrations || 0) }}</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              ↑ 10.32%
+            </span>
+            <span class="text-slate-400">disponibilidad alta</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Success Rate / Conversion Rate style -->
+        <div class="card flex flex-col justify-between">
+          <div class="text-xs font-semibold text-slate-500">Tasa de Éxito & Latencia</div>
+          <div class="text-3xl font-extrabold text-slate-900 my-2 tracking-tight">
+            {{ data()?.summary?.success_rate_percent || 98.83 }}%
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              ↑ {{ data()?.summary?.avg_response_time_ms || 180 }}ms
+            </span>
+            <span class="text-slate-400">tiempo resp. prom.</span>
           </div>
         </div>
       </div>

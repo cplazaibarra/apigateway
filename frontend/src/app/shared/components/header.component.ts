@@ -12,56 +12,75 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [CommonModule, RouterLink],
   template: `
     <header class="header-bar">
-      <!-- Title according to image -->
-      <div style="display: flex; align-items: baseline; gap: 12px;">
-        <h1 style="font-size: 1.5rem; font-weight: 400; color: #1e293b; letter-spacing: -0.02em;">
-          Dashboard <span style="font-weight: 700;">User</span>
-        </h1>
-        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-          <span class="status-dot active"></span> Online
-        </span>
+      <!-- Search Input matching Consist style -->
+      <div class="flex items-center gap-3 w-96">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-sm">
+            🔍
+          </span>
+          <input type="text"
+                 placeholder="Search anything here..."
+                 class="form-control pl-9 pr-4 py-2 text-xs bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 rounded-xl w-full focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition" />
+        </div>
       </div>
 
-      <!-- Right controls: Notifications, status & hamburger -->
-      <div style="display: flex; align-items: center; gap: 16px;">
+      <!-- Right controls matching Consist style -->
+      <div class="flex items-center gap-3">
+        <!-- Quick Action Icons -->
+        <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition text-sm" title="Export data">
+          📥
+        </button>
+
+        <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition text-sm" title="Fast Sync">
+          🚀
+        </button>
+
         <!-- Notifications Bell Button -->
-        <div style="position: relative;">
-          <button (click)="toggleNotifications()" class="btn btn-secondary" style="padding: 8px 12px; position: relative; border-radius: 8px;">
+        <div class="relative">
+          <button (click)="toggleNotifications()" class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition text-sm relative" title="Notifications">
             🔔
-            <span *ngIf="unreadCount() > 0" style="position: absolute; top: -4px; right: -4px; background-color: #f59e0b; color: white; font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 10px; border: 2px solid white;">
+            <span *ngIf="unreadCount() > 0" class="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full ring-2 ring-white">
               {{ unreadCount() }}
             </span>
           </button>
 
           <!-- Notifications Dropdown -->
-          <div *ngIf="showNotifications()" style="position: absolute; right: 0; margin-top: 8px; width: 320px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); z-index: 50; overflow: hidden;">
-            <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background-color: #f8fafc;">
-              <span style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #64748b;">Notificaciones ({{ unreadCount() }})</span>
-              <button (click)="markAllAsRead()" style="font-size: 11px; color: #f59e0b; font-weight: 600; background: none; border: none; cursor: pointer;">Marcar leídas</button>
+          <div *ngIf="showNotifications()" class="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+            <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+              <span class="text-xs font-bold uppercase text-slate-600">Notifications ({{ unreadCount() }})</span>
+              <button (click)="markAllAsRead()" class="text-xs text-emerald-600 font-semibold hover:underline bg-transparent border-0 cursor-pointer">Mark read</button>
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
-              <div *ngFor="let n of notifications()" (click)="markAsRead(n)" style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s;" [style.background-color]="!n.is_read ? '#fffbeb' : 'white'">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                  <span style="font-size: 12px; font-weight: 600; color: #1e293b;">{{ n.title }}</span>
-                  <span style="font-size: 10px; color: #94a3b8;">{{ n.created_at | date:'shortTime' }}</span>
+            <div class="max-h-60 overflow-y-auto">
+              <div *ngFor="let n of notifications()" (click)="markAsRead(n)" class="p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition" [class.bg-emerald-50]="!n.is_read">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-slate-800">{{ n.title }}</span>
+                  <span class="text-[10px] text-slate-400">{{ n.created_at | date:'shortTime' }}</span>
                 </div>
-                <p style="font-size: 11px; color: #64748b; margin: 0; line-height: 1.4;">{{ n.message }}</p>
+                <p class="text-[11px] text-slate-600 m-0 leading-relaxed">{{ n.message }}</p>
               </div>
-              <div *ngIf="notifications().length === 0" style="padding: 24px; text-align: center; font-size: 12px; color: #94a3b8;">
-                No hay notificaciones
+              <div *ngIf="notifications().length === 0" class="p-6 text-center text-xs text-slate-400">
+                No new notifications
               </div>
             </div>
-            <div style="padding: 8px; border-top: 1px solid #f1f5f9; background-color: #f8fafc; text-align: center;">
-              <a routerLink="/notifications" (click)="showNotifications.set(false)" style="font-size: 11px; color: #1e293b; font-weight: 600; text-decoration: none;">Ver todas las alertas</a>
+            <div class="p-2.5 border-t border-slate-100 bg-slate-50 text-center">
+              <a routerLink="/notifications" (click)="showNotifications.set(false)" class="text-xs text-emerald-700 font-semibold no-underline hover:underline">View all alerts</a>
             </div>
           </div>
         </div>
 
-        <!-- Right Hamburger / Logout Icon -->
-        <button (click)="authService.logout()" title="Cerrar sesión" class="btn btn-secondary" style="padding: 8px 14px; border-radius: 8px; font-weight: 600;">
-          <span>☰</span>
-          <span style="font-size: 12px;">Salir</span>
-        </button>
+        <!-- User Profile Pill matching reference -->
+        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+          <div class="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            😊
+          </div>
+          <div class="hidden sm:block text-left">
+            <div class="text-xs font-bold text-slate-800 leading-tight">{{ authService.currentUser()?.name || 'Administrator' }}</div>
+            <div class="text-[10px] text-emerald-600 font-medium">● Online</div>
+          </div>
+          <button (click)="authService.logout()" class="text-slate-400 hover:text-red-500 ml-1 text-xs border-0 bg-transparent cursor-pointer p-1" title="Sign Out">
+            ✕
+          </button>
+        </div>
       </div>
     </header>
   `,

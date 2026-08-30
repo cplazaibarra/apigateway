@@ -23,12 +23,12 @@ import {
     <div class="page-body space-y-5">
       <!-- Breadcrumb Navigation -->
       <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-2 text-xs text-slate-400">
-          <a routerLink="/integrations" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium">
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <a routerLink="/integrations" class="text-emerald-700 hover:text-emerald-800 flex items-center gap-1 font-medium">
             <span>🔌</span> Conexiones & Integraciones
           </a>
           <span>/</span>
-          <span class="text-slate-200 font-semibold">Mapeo Dinámico de Campos</span>
+          <span class="text-slate-800 font-semibold">Mapeo Dinámico de Campos</span>
           <span *ngIf="integration">({{ integration.name }})</span>
         </div>
 
@@ -38,16 +38,16 @@ import {
       </div>
 
       <!-- Main Header & Action Toolbar -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl p-2 bg-indigo-950 rounded-lg border border-indigo-500/30">🗺️</span>
+            <span class="text-2xl p-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">🗺️</span>
             <div>
-              <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 Mapeo Dinámico: {{ mappingResult()?.integration_name || integration?.name || 'Tienda' }}
                 <span class="badge badge-primary text-[10px] uppercase font-mono">{{ integration?.provider || mappingResult()?.provider || 'WOOCOMMERCE' }}</span>
               </h3>
-              <p class="text-xs text-slate-400 mt-0.5">
+              <p class="text-xs text-slate-500 mt-0.5">
                 Asocia directamente cada ruta y valor de la tienda con los campos del pedido estandarizado.
               </p>
             </div>
@@ -56,84 +56,84 @@ import {
 
         <div class="flex items-center flex-wrap gap-2.5">
           <!-- Quick Version Selector Dropdown -->
-          <div *ngIf="versions().length > 0" class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1.5 rounded-lg shadow-sm">
-            <span class="text-xs text-indigo-400 font-bold">Versión:</span>
+          <div *ngIf="versions().length > 0" class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-xl shadow-sm">
+            <span class="text-xs text-emerald-800 font-bold">Versión:</span>
             <select [ngModel]="mappingResult()?.current_version"
                     (ngModelChange)="onQuickVersionChange($event)"
-                    class="form-select text-xs py-0.5 px-2 bg-slate-900 border-slate-700 text-slate-100 rounded font-mono font-bold focus:border-indigo-500">
+                    class="form-select text-xs py-0.5 px-2 bg-white border-slate-200 text-slate-800 rounded font-mono font-bold focus:border-emerald-500">
               <option *ngFor="let v of versions()" [value]="v.version">
                 v{{ v.version }} {{ v.version === mappingResult()?.current_version ? '(ACTUAL)' : '' }} - {{ v.description || 'Configuración' }}
               </option>
             </select>
           </div>
 
-          <button (click)="saveAllMappings()" [disabled]="savingMappings()" class="btn btn-success btn-sm flex items-center gap-1.5 px-4 py-2 font-bold shadow-sm">
+          <button (click)="saveAllMappings()" [disabled]="savingMappings()" class="btn btn-primary btn-sm flex items-center gap-1.5 px-4 py-2 font-bold shadow-sm">
             <span>💾</span> {{ savingMappings() ? 'Guardando...' : 'Guardar Mapeo' }}
           </button>
-          <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-primary btn-sm flex items-center gap-1.5 px-4 py-2 font-semibold shadow-sm">
+          <button (click)="fetchSampleOrder()" [disabled]="loadingSample()" class="btn btn-secondary btn-sm flex items-center gap-1.5 px-4 py-2 font-semibold shadow-sm text-slate-700">
             <span>📥</span> {{ loadingSample() ? 'Consultando API...' : 'Obtener Pedido en Vivo' }}
           </button>
-          <button (click)="runValidationTest()" [disabled]="testingMapping() || !samplePayload" class="btn btn-secondary btn-sm flex items-center gap-1.5 px-4 py-2">
+          <button (click)="runValidationTest()" [disabled]="testingMapping() || !samplePayload" class="btn btn-secondary btn-sm flex items-center gap-1.5 px-4 py-2 text-slate-700">
             <span>⚡</span> {{ testingMapping() ? 'Probando...' : 'Probar Pedido Canónico' }}
           </button>
-          <button (click)="openVersionModal()" class="btn btn-secondary btn-sm flex items-center gap-1.5">
+          <button (click)="openVersionModal()" class="btn btn-secondary btn-sm flex items-center gap-1.5 text-slate-700">
             <span>🕒</span> Historial ({{ versions().length }})
           </button>
         </div>
       </div>
 
       <!-- Live Test Result Matrix Table (Appears when user clicks 'Probar Pedido Canónico') -->
-      <div *ngIf="previewResult && previewResult.canonical_order" class="bg-slate-900 border-2 border-indigo-500/40 rounded-xl overflow-hidden shadow-lg space-y-0">
+      <div *ngIf="previewResult && previewResult.canonical_order" class="bg-white border-2 border-emerald-500/40 rounded-2xl overflow-hidden shadow-md space-y-0">
         <!-- Header banner -->
-        <div class="p-4 bg-slate-950 border-b border-indigo-500/30 flex items-center justify-between">
+        <div class="p-4 bg-slate-50 border-b border-emerald-500/20 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="text-xl">🔬</span>
             <div>
-              <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span>Resultado de Prueba: Matriz de Pedido Estandarizado Canónico</span>
                 <span class="badge badge-success text-[10px] font-mono">PEDIDO #{{ previewResult.canonical_order.order_number }}</span>
               </h4>
-              <p class="text-xs text-slate-400">Valores consolidados resultantes de tus reglas de mapeo actuales</p>
+              <p class="text-xs text-slate-500">Valores consolidados resultantes de tus reglas de mapeo actuales</p>
             </div>
           </div>
-          <button (click)="previewResult = null" class="btn btn-secondary btn-sm text-xs py-1 px-2.5 text-slate-300 hover:text-white">
+          <button (click)="previewResult = null" class="btn btn-secondary btn-sm text-xs py-1 px-2.5 text-slate-600 hover:text-slate-900">
             ✕ Ocultar Matriz de Prueba
           </button>
         </div>
 
         <!-- Matrix Table of Standardized Fields -->
         <div class="table-container border-0 rounded-none bg-transparent">
-          <table class="w-full text-left" style="background-color: #0b1120;">
-            <thead style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
+          <table class="w-full text-left bg-white">
+            <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="p-3 font-bold uppercase text-xs text-indigo-300 w-1/4">1. Campo Canónico Estandarizado</th>
-                <th class="p-3 font-bold uppercase text-xs text-emerald-400 w-1/2">2. Valor Extraído & Mapeado</th>
-                <th class="p-3 font-bold uppercase text-xs text-amber-300 w-1/4">3. Estado de Validación</th>
+                <th class="p-3 font-bold uppercase text-xs text-slate-700 w-1/4">1. Campo Canónico Estandarizado</th>
+                <th class="p-3 font-bold uppercase text-xs text-emerald-800 w-1/2">2. Valor Extraído & Mapeado</th>
+                <th class="p-3 font-bold uppercase text-xs text-slate-700 w-1/4">3. Estado de Validación</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800 text-xs font-mono">
+            <tbody class="divide-y divide-slate-100 text-xs font-mono">
               <!-- Nº Pedido -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">order.order_number (Nº Pedido)</td>
-                <td class="p-3 text-emerald-400 font-bold text-sm">#{{ previewResult.canonical_order.order_number }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">order.order_number (Nº Pedido)</td>
+                <td class="p-3 text-emerald-700 font-bold text-sm">#{{ previewResult.canonical_order.order_number }}</td>
                 <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
               </tr>
               <!-- Estado -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">order.status (Estado)</td>
-                <td class="p-3 text-indigo-300 font-bold">{{ previewResult.canonical_order.status }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">order.status (Estado)</td>
+                <td class="p-3 text-slate-800 font-bold">{{ previewResult.canonical_order.status }}</td>
                 <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
               </tr>
               <!-- Total -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">order.total & currency (Total)</td>
-                <td class="p-3 text-amber-400 font-bold text-sm">\${{ previewResult.canonical_order.total | number }} {{ previewResult.canonical_order.currency }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">order.total & currency (Total)</td>
+                <td class="p-3 text-amber-700 font-bold text-sm">\${{ previewResult.canonical_order.total | number }} {{ previewResult.canonical_order.currency }}</td>
                 <td class="p-3"><span class="badge badge-success text-[10px]">✓ VÁLIDO</span></td>
               </tr>
               <!-- Cliente -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">customer.name (Cliente)</td>
-                <td class="p-3 text-slate-200">{{ previewResult.canonical_order.customer.name || '(Sin nombre)' }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">customer.name (Cliente)</td>
+                <td class="p-3 text-slate-800">{{ previewResult.canonical_order.customer.name || '(Sin nombre)' }}</td>
                 <td class="p-3">
                   <span class="badge" [ngClass]="previewResult.canonical_order.customer.name ? 'badge-success' : 'badge-warning'">
                     {{ previewResult.canonical_order.customer.name ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
@@ -141,9 +141,9 @@ import {
                 </td>
               </tr>
               <!-- Email -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">customer.email (Email)</td>
-                <td class="p-3 text-indigo-300">{{ previewResult.canonical_order.customer.email || '(Sin email)' }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">customer.email (Email)</td>
+                <td class="p-3 text-slate-800">{{ previewResult.canonical_order.customer.email || '(Sin email)' }}</td>
                 <td class="p-3">
                   <span class="badge" [ngClass]="previewResult.canonical_order.customer.email ? 'badge-success' : 'badge-warning'">
                     {{ previewResult.canonical_order.customer.email ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
@@ -151,9 +151,9 @@ import {
                 </td>
               </tr>
               <!-- Teléfono -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">customer.phone (Teléfono)</td>
-                <td class="p-3 text-slate-300">{{ previewResult.canonical_order.customer.phone || '(Sin teléfono)' }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">customer.phone (Teléfono)</td>
+                <td class="p-3 text-slate-800">{{ previewResult.canonical_order.customer.phone || '(Sin teléfono)' }}</td>
                 <td class="p-3">
                   <span class="badge" [ngClass]="previewResult.canonical_order.customer.phone ? 'badge-success' : 'badge-warning'">
                     {{ previewResult.canonical_order.customer.phone ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
@@ -161,9 +161,9 @@ import {
                 </td>
               </tr>
               <!-- Dirección -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">delivery.address (Dirección)</td>
-                <td class="p-3 text-emerald-300">{{ previewResult.canonical_order.delivery.address || '(Sin dirección)' }}</td>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">delivery.address (Dirección)</td>
+                <td class="p-3 text-emerald-800 font-bold">{{ previewResult.canonical_order.delivery.address || '(Sin dirección)' }}</td>
                 <td class="p-3">
                   <span class="badge" [ngClass]="previewResult.canonical_order.delivery.address ? 'badge-success' : 'badge-warning'">
                     {{ previewResult.canonical_order.delivery.address ? '✓ ASIGNADO' : '⚠️ VACÍO' }}
@@ -171,11 +171,11 @@ import {
                 </td>
               </tr>
               <!-- Comuna & Ciudad -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">delivery.city / commune (Comuna)</td>
-                <td class="p-3 text-amber-300 font-bold">
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">delivery.city / commune (Comuna)</td>
+                <td class="p-3 text-amber-800 font-bold">
                   {{ previewResult.canonical_order.delivery.city }}
-                  <span *ngIf="previewResult.canonical_order.delivery.region" class="text-slate-400 font-normal">({{ previewResult.canonical_order.delivery.region }}, {{ previewResult.canonical_order.delivery.country }})</span>
+                  <span *ngIf="previewResult.canonical_order.delivery.region" class="text-slate-500 font-normal">({{ previewResult.canonical_order.delivery.region }}, {{ previewResult.canonical_order.delivery.country }})</span>
                 </td>
                 <td class="p-3">
                   <span class="badge" [ngClass]="previewResult.canonical_order.delivery.city ? 'badge-success' : 'badge-warning'">
@@ -184,17 +184,17 @@ import {
                 </td>
               </tr>
               <!-- Items / SKUs -->
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-bold text-slate-300">items[] (Detalle de Productos)</td>
-                <td class="p-3 text-slate-300" colspan="2">
-                  <div *ngFor="let item of previewResult.canonical_order.items; let i = index" class="p-2 bg-slate-950 rounded border border-slate-800 mb-1.5 flex items-center justify-between gap-2">
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-700">items[] (Detalle de Productos)</td>
+                <td class="p-3 text-slate-800" colspan="2">
+                  <div *ngFor="let item of previewResult.canonical_order.items; let i = index" class="p-2 bg-slate-50 rounded-xl border border-slate-200 mb-1.5 flex items-center justify-between gap-2">
                     <div>
-                      <span class="text-purple-400 font-bold">SKU: {{ item.sku }}</span> &nbsp;•&nbsp;
-                      <span class="text-slate-200">{{ item.description }}</span>
+                      <span class="text-purple-700 font-bold">SKU: {{ item.sku }}</span> &nbsp;•&nbsp;
+                      <span class="text-slate-800">{{ item.description }}</span>
                     </div>
                     <div class="text-right">
-                      <span class="text-emerald-400 font-bold">Cant: {{ item.quantity }}</span> &nbsp;•&nbsp;
-                      <span class="text-amber-400 font-bold">\${{ item.total | number }}</span>
+                      <span class="text-emerald-700 font-bold">Cant: {{ item.quantity }}</span> &nbsp;•&nbsp;
+                      <span class="text-amber-700 font-bold">\${{ item.total | number }}</span>
                     </div>
                   </div>
                 </td>
@@ -205,15 +205,15 @@ import {
       </div>
 
       <!-- MAIN 3-COLUMN MAPPING MATRIX -->
-      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm p-0">
         <!-- Matrix Toolbar / Search -->
-        <div class="p-4 border-b border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="p-4 border-b border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3 flex-1">
             <input type="text"
                    [(ngModel)]="searchQuery"
                    placeholder="🔍 Buscar por ruta de API o valor (ej: custom, address, phone, price)..."
-                   class="form-control text-xs py-2 px-3 bg-slate-900 border-slate-800 text-slate-100 rounded-lg w-full max-w-md" />
-            <span class="text-xs text-slate-400 font-mono">
+                   class="form-control text-xs py-2 px-3 bg-white border-slate-200 text-slate-800 rounded-xl w-full max-w-md" />
+            <span class="text-xs text-slate-500 font-mono">
               {{ filteredKeys().length }} de {{ flattenedSampleKeys.length }} rutas
             </span>
           </div>
@@ -227,31 +227,31 @@ import {
 
         <!-- When sample is loaded: Matrix Table -->
         <div *ngIf="samplePayload" class="table-container border-0 rounded-none bg-transparent max-h-[70vh] overflow-y-auto">
-          <table class="w-full text-left" style="background-color: #0b1120; color: #f8fafc;">
-            <thead class="sticky top-0 z-10" style="background-color: #0f172a; border-bottom: 1px solid #1e293b;">
+          <table class="w-full text-left bg-white">
+            <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-indigo-300">
+                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-slate-700">
                   1. Ruta / Dato que da la API (Source Path)
                 </th>
-                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-emerald-400">
+                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-emerald-800">
                   2. Valor que envía en esa Ruta
                 </th>
-                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-amber-300">
+                <th class="w-1/3 p-3.5 font-bold uppercase text-xs text-slate-700">
                   3. Asociar a Campo Estandarizado (Objetivo)
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800 font-mono text-xs">
-              <tr *ngFor="let item of filteredKeys()" class="hover:bg-slate-900/60 transition" style="border-bottom: 1px solid #1e293b;">
+            <tbody class="divide-y divide-slate-100 font-mono text-xs">
+              <tr *ngFor="let item of filteredKeys()" class="hover:bg-slate-50 transition">
                 <!-- Columna 1: Ruta de la API -->
                 <td class="p-3.5 align-middle">
-                  <span class="text-indigo-300 font-bold bg-slate-900 px-2.5 py-1.5 rounded border border-indigo-500/30 inline-block">
+                  <span class="text-slate-800 font-bold bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 inline-block">
                     {{ item.path }}
                   </span>
                 </td>
 
                 <!-- Columna 2: Valor que viene en esa ruta -->
-                <td class="p-3.5 align-middle text-emerald-400 font-semibold break-all bg-slate-950/50">
+                <td class="p-3.5 align-middle text-emerald-700 font-semibold break-all bg-emerald-50/40">
                   {{ item.value }}
                 </td>
 
@@ -261,7 +261,7 @@ import {
                     <div class="flex items-center gap-2">
                       <select [(ngModel)]="sampleKeyAssignments[item.path]"
                               (change)="assignSampleKeyToCanonical(item.path)"
-                              class="form-select text-xs py-1.5 px-3 bg-slate-900 border border-slate-700 text-slate-100 rounded w-full focus:border-indigo-500">
+                              class="form-select text-xs py-1.5 px-3 bg-white border border-slate-300 text-slate-800 rounded-xl w-full focus:border-emerald-500">
                         <option value="">(Sin asociar / Dejar en blanco)</option>
                         <optgroup label="📦 Datos del Pedido">
                           <option value="order.order_number">order.order_number (Nº de Pedido)</option>
