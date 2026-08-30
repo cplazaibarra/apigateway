@@ -56,6 +56,7 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                 <th>Integración & Cliente</th>
                 <th>Proveedor</th>
                 <th>Endpoint Base & Auth</th>
+                <th>Ambiente</th>
                 <th>Estado & Polling</th>
                 <th>Última Sincronización</th>
                 <th>Pedidos</th>
@@ -87,6 +88,23 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                 <td class="text-xs">
                   <div class="text-slate-300 font-mono truncate max-w-xs" [title]="it.base_url">{{ it.base_url }}</div>
                   <div class="text-slate-500 text-[10px] mt-0.5">{{ it.auth_type }} | {{ it.masked_credentials }}</div>
+                </td>
+
+                <!-- Ambiente (PRODUCCIÓN vs PRUEBA) -->
+                <td>
+                  <button *ngIf="auth.isOperator()"
+                          (click)="toggleEnvironment(it)"
+                          class="btn btn-sm text-xs py-1 px-2.5 font-bold rounded-lg border transition flex items-center gap-1.5 shadow-sm"
+                          [ngClass]="it.environment === 'PRODUCTION' ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 hover:bg-emerald-900' : 'bg-amber-950/80 border-amber-500 text-amber-300 hover:bg-amber-900'"
+                          [title]="it.environment === 'PRODUCTION' ? 'En PRODUCCIÓN: al sincronizar cambiará el estado de los pedidos en la tienda origen. Clic para cambiar a MODO PRUEBA.' : 'En MODO PRUEBA: solo consulta la API y no modifica el estado en la tienda origen. Clic para activar PRODUCCIÓN.'">
+                    <span>{{ it.environment === 'PRODUCTION' ? '🟢 PRODUCCIÓN' : '🧪 MODO PRUEBA' }}</span>
+                  </button>
+                  <span *ngIf="!auth.isOperator()" class="badge" [ngClass]="it.environment === 'PRODUCTION' ? 'badge-success' : 'badge-warning'">
+                    {{ it.environment === 'PRODUCTION' ? 'PRODUCCIÓN' : 'PRUEBA' }}
+                  </span>
+                  <div class="text-[10px] text-slate-500 mt-1">
+                    {{ it.environment === 'PRODUCTION' ? 'Actualiza estado en tienda' : 'Solo lectura en tienda' }}
+                  </div>
                 </td>
 
                 <td>
@@ -290,7 +308,17 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                 <label class="form-label">Intervalo de Polling (Minutos)</label>
                 <input type="number" [(ngModel)]="formIntegration.polling_interval_minutes" name="polling_interval" min="1" max="1440" class="form-control text-xs font-mono" />
               </div>
-              <div class="form-group" *ngIf="isEditing()">
+              <div class="form-group">
+                <label class="form-label">Ambiente de Ejecución</label>
+                <select [(ngModel)]="formIntegration.environment" name="environment" class="form-select text-xs">
+                  <option value="TEST">🧪 MODO PRUEBA (Solo lectura en tienda)</option>
+                  <option value="PRODUCTION">🟢 PRODUCCIÓN (Actualiza estado de pedidos en tienda)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3" *ngIf="isEditing()">
+              <div class="form-group">
                 <label class="form-label">Estado de la Integración</label>
                 <select [(ngModel)]="formIntegration.status" name="status" class="form-select text-xs">
                   <option value="ACTIVE">ACTIVE (Operativa)</option>
@@ -435,6 +463,20 @@ export class IntegrationsComponent implements OnInit {
         this.toast.info(`Polling ${it.polling_enabled ? 'habilitado' : 'pausado'} para ${it.name}`);
       },
       error: () => this.toast.error('Error al cambiar estado de polling')
+    });
+  }
+
+  toggleEnvironment(it: Integration) {
+    this.api.toggleIntegrationEnvironment(it.id).subscribe({
+      next: res => {
+        it.environment = res.environment;
+        if (res.environment === 'PRODUCTION') {
+          this.toast.success(`🟢 ${it.name} ahora está en PRODUCCIÓN: al sincronizar cambiará el estado de los pedidos en la tienda.`);
+        } else {
+          this.toast.info(`🧪 ${it.name} ahora está en MODO PRUEBA: no modificará el estado de los pedidos en la tienda.`);
+        }
+      },
+      error: () => this.toast.error('Error al cambiar ambiente de ejecución')
     });
   }
 

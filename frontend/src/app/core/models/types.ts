@@ -46,6 +46,7 @@ export interface Integration {
   auth_type: 'API_KEY' | 'OAUTH2' | 'BASIC' | 'BEARER';
   masked_credentials?: string;
   status: 'ACTIVE' | 'ERROR' | 'DISABLED' | 'SYNCING';
+  environment?: 'PRODUCTION' | 'TEST';
   polling_enabled: boolean;
   polling_interval_minutes: number;
   last_sync_at?: string;

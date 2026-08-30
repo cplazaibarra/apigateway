@@ -30,6 +30,12 @@ const (
 	LogLevelDebug   = "DEBUG"
 )
 
+// Environment Modes
+const (
+	EnvProduction = "PRODUCTION"
+	EnvTest       = "TEST"
+)
+
 // Providers
 const (
 	ProviderWooCommerce = "WOOCOMMERCE"
@@ -122,6 +128,7 @@ type Integration struct {
 	Credentials            json.RawMessage `json:"-"`         // Hidden from normal output
 	MaskedCredentials      string          `json:"masked_credentials,omitempty"`
 	Status                 string          `json:"status"` // ACTIVE, ERROR, DISABLED, SYNCING
+	Environment            string          `json:"environment"` // PRODUCTION, TEST
 	PollingEnabled         bool            `json:"polling_enabled"`
 	PollingIntervalMinutes int             `json:"polling_interval_minutes"`
 	LastSyncAt             *time.Time      `json:"last_sync_at,omitempty"`

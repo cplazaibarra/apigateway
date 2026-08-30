@@ -37,7 +37,7 @@ type IntegrationFilter struct {
 func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter) ([]domain.Integration, error) {
 	query := `
 		SELECT i.id, i.customer_id, c.name AS customer_name, c.code AS customer_code,
-		       i.name, i.provider, i.base_url, i.auth_type, i.status, i.polling_enabled,
+		       i.name, i.provider, i.base_url, i.auth_type, i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled,
 		       i.polling_interval_minutes, i.last_sync_at, i.next_polling_at, i.total_orders_synced,
 		       i.consecutive_errors, COALESCE(i.last_error, ''), i.avg_response_time_ms, i.created_at, i.updated_at
 		FROM integrations i
@@ -58,7 +58,7 @@ func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter)
 	for rows.Next() {
 		var it domain.Integration
 		if err := rows.Scan(&it.ID, &it.CustomerID, &it.CustomerName, &it.CustomerCode,
-			&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Status, &it.PollingEnabled,
+			&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Status, &it.Environment, &it.PollingEnabled,
 			&it.PollingIntervalMinutes, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
 			&it.ConsecutiveErrors, &it.LastError, &it.AvgResponseTimeMs, &it.CreatedAt, &it.UpdatedAt); err != nil {
 			return nil, err
@@ -72,7 +72,7 @@ func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter)
 func (s *IntegrationService) GetByID(ctx context.Context, id string) (*domain.Integration, error) {
 	row := s.db.QueryRowContext(ctx, `
 		SELECT i.id, i.customer_id, c.name AS customer_name, c.code AS customer_code,
-		       i.name, i.provider, i.base_url, i.auth_type, i.credentials, i.status, i.polling_enabled,
+		       i.name, i.provider, i.base_url, i.auth_type, i.credentials, i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled,
 		       i.polling_interval_minutes, i.last_sync_at, i.next_polling_at, i.total_orders_synced,
 		       i.consecutive_errors, COALESCE(i.last_error, ''), i.avg_response_time_ms, i.created_at, i.updated_at
 		FROM integrations i
@@ -82,7 +82,7 @@ func (s *IntegrationService) GetByID(ctx context.Context, id string) (*domain.In
 
 	var it domain.Integration
 	if err := row.Scan(&it.ID, &it.CustomerID, &it.CustomerName, &it.CustomerCode,
-		&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Credentials, &it.Status, &it.PollingEnabled,
+		&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Credentials, &it.Status, &it.Environment, &it.PollingEnabled,
 		&it.PollingIntervalMinutes, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
 		&it.ConsecutiveErrors, &it.LastError, &it.AvgResponseTimeMs, &it.CreatedAt, &it.UpdatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -101,6 +101,7 @@ type CreateIntegrationRequest struct {
 	BaseURL                string                 `json:"base_url"`
 	AuthType               string                 `json:"auth_type"`
 	Credentials            map[string]interface{} `json:"credentials"`
+	Environment            string                 `json:"environment"`
 	PollingEnabled         bool                   `json:"polling_enabled"`
 	PollingIntervalMinutes int                    `json:"polling_interval_minutes"`
 }
@@ -112,6 +113,10 @@ func (s *IntegrationService) Create(ctx context.Context, req CreateIntegrationRe
 		return nil, err
 	}
 
+	if req.Environment == "" {
+		req.Environment = domain.EnvTest
+	}
+
 	if req.PollingIntervalMinutes <= 0 {
 		req.PollingIntervalMinutes = 15
 	}
@@ -120,10 +125,10 @@ func (s *IntegrationService) Create(ctx context.Context, req CreateIntegrationRe
 	_, err = s.db.ExecContext(ctx, `
 		INSERT INTO integrations (
 			id, customer_id, name, provider, base_url, auth_type, credentials,
-			status, polling_enabled, polling_interval_minutes, next_polling_at, created_at, updated_at
+			status, environment, polling_enabled, polling_interval_minutes, next_polling_at, created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, $10, NOW(), NOW())
-	`, id, req.CustomerID, req.Name, req.Provider, req.BaseURL, req.AuthType, string(credJSON), req.PollingEnabled, req.PollingIntervalMinutes, nextPoll)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, $10, $11, NOW(), NOW())
+	`, id, req.CustomerID, req.Name, req.Provider, req.BaseURL, req.AuthType, string(credJSON), req.Environment, req.PollingEnabled, req.PollingIntervalMinutes, nextPoll)
 	if err != nil {
 		return nil, fmt.Errorf("error al crear integración: %w", err)
 	}
@@ -136,6 +141,7 @@ type UpdateIntegrationRequest struct {
 	BaseURL                string                 `json:"base_url"`
 	AuthType               string                 `json:"auth_type"`
 	Credentials            map[string]interface{} `json:"credentials,omitempty"`
+	Environment            string                 `json:"environment"`
 	PollingEnabled         bool                   `json:"polling_enabled"`
 	PollingIntervalMinutes int                    `json:"polling_interval_minutes"`
 	Status                 string                 `json:"status"`
@@ -164,6 +170,10 @@ func (s *IntegrationService) Update(ctx context.Context, id string, req UpdateIn
 		credJSON, _ = json.Marshal(existingMap)
 	}
 
+	if req.Environment == "" {
+		req.Environment = existing.Environment
+	}
+
 	if req.PollingIntervalMinutes <= 0 {
 		req.PollingIntervalMinutes = existing.PollingIntervalMinutes
 	}
@@ -171,14 +181,28 @@ func (s *IntegrationService) Update(ctx context.Context, id string, req UpdateIn
 	_, err = s.db.ExecContext(ctx, `
 		UPDATE integrations
 		SET name = $1, base_url = $2, auth_type = $3, credentials = $4,
-		    polling_enabled = $5, polling_interval_minutes = $6, status = $7, updated_at = NOW()
-		WHERE id = $8
-	`, req.Name, req.BaseURL, req.AuthType, string(credJSON), req.PollingEnabled, req.PollingIntervalMinutes, req.Status, id)
+		    polling_enabled = $5, polling_interval_minutes = $6, status = $7, environment = $8, updated_at = NOW()
+		WHERE id = $9
+	`, req.Name, req.BaseURL, req.AuthType, string(credJSON), req.PollingEnabled, req.PollingIntervalMinutes, req.Status, req.Environment, id)
 	if err != nil {
 		return nil, fmt.Errorf("error al actualizar integración: %w", err)
 	}
 
 	return s.GetByID(ctx, id)
+}
+
+func (s *IntegrationService) ToggleEnvironment(ctx context.Context, id string) (string, error) {
+	var current string
+	err := s.db.QueryRowContext(ctx, "SELECT COALESCE(environment, 'TEST') FROM integrations WHERE id = $1", id).Scan(&current)
+	if err != nil {
+		return "", err
+	}
+	newVal := domain.EnvProduction
+	if current == domain.EnvProduction {
+		newVal = domain.EnvTest
+	}
+	_, err = s.db.ExecContext(ctx, "UPDATE integrations SET environment = $1, updated_at = NOW() WHERE id = $2", newVal, id)
+	return newVal, err
 }
 
 func (s *IntegrationService) Delete(ctx context.Context, id string) error {

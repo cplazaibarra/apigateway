@@ -71,6 +71,10 @@ export class ApiService {
     return this.http.post<{ id: string; polling_enabled: boolean }>(`${this.baseUrl}/integrations/${id}/toggle-polling`, {});
   }
 
+  toggleIntegrationEnvironment(id: string): Observable<{ id: string; environment: 'PRODUCTION' | 'TEST' }> {
+    return this.http.post<{ id: string; environment: 'PRODUCTION' | 'TEST' }>(`${this.baseUrl}/integrations/${id}/toggle-environment`, {});
+  }
+
   testConnection(id: string): Observable<ProviderTestResult> {
     return this.http.post<ProviderTestResult>(`${this.baseUrl}/integrations/${id}/test`, {});
   }

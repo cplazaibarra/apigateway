@@ -344,6 +344,8 @@ func (db *DB) Migrate(ctx context.Context) error {
 	CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
 	CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(is_read, created_at DESC);
 
+	ALTER TABLE integrations ADD COLUMN IF NOT EXISTS environment VARCHAR(32) NOT NULL DEFAULT 'TEST';
+
 	-- Standardized Relational View joining orders header and order_items detail
 	CREATE OR REPLACE VIEW view_standardized_orders AS
 	SELECT 
