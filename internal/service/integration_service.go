@@ -38,7 +38,7 @@ func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter)
 	query := `
 		SELECT i.id, i.customer_id, c.name AS customer_name, c.code AS customer_code,
 		       i.name, i.provider, i.base_url, i.auth_type, i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled,
-		       i.polling_interval_minutes, i.last_sync_at, i.next_polling_at, i.total_orders_synced,
+		       i.polling_interval_minutes, COALESCE(i.sync_batch_size, 10), i.last_sync_at, i.next_polling_at, i.total_orders_synced,
 		       i.consecutive_errors, COALESCE(i.last_error, ''), i.avg_response_time_ms, i.created_at, i.updated_at
 		FROM integrations i
 		JOIN customers c ON i.customer_id = c.id
@@ -59,7 +59,7 @@ func (s *IntegrationService) List(ctx context.Context, filter IntegrationFilter)
 		var it domain.Integration
 		if err := rows.Scan(&it.ID, &it.CustomerID, &it.CustomerName, &it.CustomerCode,
 			&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Status, &it.Environment, &it.PollingEnabled,
-			&it.PollingIntervalMinutes, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
+			&it.PollingIntervalMinutes, &it.SyncBatchSize, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
 			&it.ConsecutiveErrors, &it.LastError, &it.AvgResponseTimeMs, &it.CreatedAt, &it.UpdatedAt); err != nil {
 			return nil, err
 		}
@@ -73,7 +73,7 @@ func (s *IntegrationService) GetByID(ctx context.Context, id string) (*domain.In
 	row := s.db.QueryRowContext(ctx, `
 		SELECT i.id, i.customer_id, c.name AS customer_name, c.code AS customer_code,
 		       i.name, i.provider, i.base_url, i.auth_type, i.credentials, i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled,
-		       i.polling_interval_minutes, i.last_sync_at, i.next_polling_at, i.total_orders_synced,
+		       i.polling_interval_minutes, COALESCE(i.sync_batch_size, 10), i.last_sync_at, i.next_polling_at, i.total_orders_synced,
 		       i.consecutive_errors, COALESCE(i.last_error, ''), i.avg_response_time_ms, i.created_at, i.updated_at
 		FROM integrations i
 		JOIN customers c ON i.customer_id = c.id
@@ -83,7 +83,7 @@ func (s *IntegrationService) GetByID(ctx context.Context, id string) (*domain.In
 	var it domain.Integration
 	if err := row.Scan(&it.ID, &it.CustomerID, &it.CustomerName, &it.CustomerCode,
 		&it.Name, &it.Provider, &it.BaseURL, &it.AuthType, &it.Credentials, &it.Status, &it.Environment, &it.PollingEnabled,
-		&it.PollingIntervalMinutes, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
+		&it.PollingIntervalMinutes, &it.SyncBatchSize, &it.LastSyncAt, &it.NextPollingAt, &it.TotalOrdersSynced,
 		&it.ConsecutiveErrors, &it.LastError, &it.AvgResponseTimeMs, &it.CreatedAt, &it.UpdatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("integración no encontrada")
@@ -104,6 +104,7 @@ type CreateIntegrationRequest struct {
 	Environment            string                 `json:"environment"`
 	PollingEnabled         bool                   `json:"polling_enabled"`
 	PollingIntervalMinutes int                    `json:"polling_interval_minutes"`
+	SyncBatchSize          int                    `json:"sync_batch_size"`
 }
 
 func (s *IntegrationService) Create(ctx context.Context, req CreateIntegrationRequest) (*domain.Integration, error) {
@@ -120,15 +121,18 @@ func (s *IntegrationService) Create(ctx context.Context, req CreateIntegrationRe
 	if req.PollingIntervalMinutes <= 0 {
 		req.PollingIntervalMinutes = 15
 	}
+	if req.SyncBatchSize <= 0 {
+		req.SyncBatchSize = 10
+	}
 	nextPoll := time.Now().Add(time.Duration(req.PollingIntervalMinutes) * time.Minute)
 
 	_, err = s.db.ExecContext(ctx, `
 		INSERT INTO integrations (
 			id, customer_id, name, provider, base_url, auth_type, credentials,
-			status, environment, polling_enabled, polling_interval_minutes, next_polling_at, created_at, updated_at
+			status, environment, polling_enabled, polling_interval_minutes, sync_batch_size, next_polling_at, created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, $10, $11, NOW(), NOW())
-	`, id, req.CustomerID, req.Name, req.Provider, req.BaseURL, req.AuthType, string(credJSON), req.Environment, req.PollingEnabled, req.PollingIntervalMinutes, nextPoll)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, $10, $11, $12, NOW(), NOW())
+	`, id, req.CustomerID, req.Name, req.Provider, req.BaseURL, req.AuthType, string(credJSON), req.Environment, req.PollingEnabled, req.PollingIntervalMinutes, req.SyncBatchSize, nextPoll)
 	if err != nil {
 		return nil, fmt.Errorf("error al crear integración: %w", err)
 	}
@@ -144,6 +148,7 @@ type UpdateIntegrationRequest struct {
 	Environment            string                 `json:"environment"`
 	PollingEnabled         bool                   `json:"polling_enabled"`
 	PollingIntervalMinutes int                    `json:"polling_interval_minutes"`
+	SyncBatchSize          int                    `json:"sync_batch_size"`
 	Status                 string                 `json:"status"`
 }
 
@@ -177,13 +182,19 @@ func (s *IntegrationService) Update(ctx context.Context, id string, req UpdateIn
 	if req.PollingIntervalMinutes <= 0 {
 		req.PollingIntervalMinutes = existing.PollingIntervalMinutes
 	}
+	if req.SyncBatchSize <= 0 {
+		req.SyncBatchSize = existing.SyncBatchSize
+	}
+	if req.SyncBatchSize <= 0 {
+		req.SyncBatchSize = 10
+	}
 
 	_, err = s.db.ExecContext(ctx, `
 		UPDATE integrations
 		SET name = $1, base_url = $2, auth_type = $3, credentials = $4,
-		    polling_enabled = $5, polling_interval_minutes = $6, status = $7, environment = $8, updated_at = NOW()
-		WHERE id = $9
-	`, req.Name, req.BaseURL, req.AuthType, string(credJSON), req.PollingEnabled, req.PollingIntervalMinutes, req.Status, req.Environment, id)
+		    polling_enabled = $5, polling_interval_minutes = $6, status = $7, environment = $8, sync_batch_size = $9, updated_at = NOW()
+		WHERE id = $10
+	`, req.Name, req.BaseURL, req.AuthType, string(credJSON), req.PollingEnabled, req.PollingIntervalMinutes, req.Status, req.Environment, req.SyncBatchSize, id)
 	if err != nil {
 		return nil, fmt.Errorf("error al actualizar integración: %w", err)
 	}

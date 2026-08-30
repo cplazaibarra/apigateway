@@ -162,10 +162,14 @@ func (a *WooCommerceAdapter) TestConnection(ctx context.Context, integration *do
 	}, nil
 }
 
-// FetchRawOrders fetches un-opinionated raw JSON order payloads from WooCommerce REST v3 (10 orders per batch)
+// FetchRawOrders fetches un-opinionated raw JSON order payloads from WooCommerce REST v3
 func (a *WooCommerceAdapter) FetchRawOrders(ctx context.Context, integration *domain.Integration, since *time.Time) ([][]byte, error) {
 	baseURL := strings.TrimRight(integration.BaseURL, "/")
-	ordersURL := baseURL + "/orders?per_page=10&status=processing,pending"
+	batchSize := integration.SyncBatchSize
+	if batchSize <= 0 {
+		batchSize = 10
+	}
+	ordersURL := fmt.Sprintf("%s/orders?per_page=%d&status=processing,pending", baseURL, batchSize)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ordersURL, nil)
 	if err != nil {
@@ -203,8 +207,8 @@ func (a *WooCommerceAdapter) FetchRawOrders(ctx context.Context, integration *do
 	for i, r := range rawArray {
 		result[i] = []byte(r)
 	}
-	if len(result) > 10 {
-		result = result[:10]
+	if len(result) > batchSize {
+		result = result[:batchSize]
 	}
 	return result, nil
 }

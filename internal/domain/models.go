@@ -131,6 +131,7 @@ type Integration struct {
 	Environment            string          `json:"environment"` // PRODUCTION, TEST
 	PollingEnabled         bool            `json:"polling_enabled"`
 	PollingIntervalMinutes int             `json:"polling_interval_minutes"`
+	SyncBatchSize          int             `json:"sync_batch_size"`
 	LastSyncAt             *time.Time      `json:"last_sync_at,omitempty"`
 	NextPollingAt          *time.Time      `json:"next_polling_at,omitempty"`
 	TotalOrdersSynced      int64           `json:"total_orders_synced"`

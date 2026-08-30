@@ -49,6 +49,7 @@ export interface Integration {
   environment?: 'PRODUCTION' | 'TEST';
   polling_enabled: boolean;
   polling_interval_minutes: number;
+  sync_batch_size?: number;
   last_sync_at?: string;
   next_polling_at?: string;
   total_orders_synced: number;

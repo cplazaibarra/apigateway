@@ -127,8 +127,13 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   <div class="text-[10px] text-slate-500">Próx: {{ it.next_polling_at ? (it.next_polling_at | date:'HH:mm') : '-' }}</div>
                 </td>
 
-                <td class="font-mono font-bold text-xs text-purple-400">
-                  {{ it.total_orders_synced | number }}
+                <td class="text-xs">
+                  <div class="font-mono font-bold text-purple-400 text-sm">
+                    {{ it.total_orders_synced | number }}
+                  </div>
+                  <div class="text-[10px] text-slate-500 font-mono mt-0.5" title="Cantidad de pedidos solicitados por lote a la API">
+                    📦 Lote: {{ it.sync_batch_size || 10 }} / req
+                  </div>
                 </td>
 
                 <td class="font-mono font-semibold text-xs text-amber-400">
@@ -303,16 +308,20 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-3">
               <div class="form-group">
-                <label class="form-label">Intervalo de Polling (Minutos)</label>
+                <label class="form-label">Intervalo Polling (Min)</label>
                 <input type="number" [(ngModel)]="formIntegration.polling_interval_minutes" name="polling_interval" min="1" max="1440" class="form-control text-xs font-mono" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Pedidos por Consulta (Batch)</label>
+                <input type="number" [(ngModel)]="formIntegration.sync_batch_size" name="sync_batch_size" min="1" max="100" placeholder="10" class="form-control text-xs font-mono" />
               </div>
               <div class="form-group">
                 <label class="form-label">Ambiente de Ejecución</label>
                 <select [(ngModel)]="formIntegration.environment" name="environment" class="form-select text-xs">
-                  <option value="TEST">🧪 MODO PRUEBA (Solo lectura en tienda)</option>
-                  <option value="PRODUCTION">🟢 PRODUCCIÓN (Actualiza estado de pedidos en tienda)</option>
+                  <option value="TEST">🧪 MODO PRUEBA</option>
+                  <option value="PRODUCTION">🟢 PRODUCCIÓN</option>
                 </select>
               </div>
             </div>

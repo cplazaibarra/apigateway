@@ -96,7 +96,7 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 	// Fetch integration
 	row := s.db.QueryRowContext(ctx, `
 		SELECT i.id, i.customer_id, c.name, i.name, i.provider, i.base_url, i.auth_type, i.credentials,
-		       i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled, i.polling_interval_minutes, i.last_sync_at, i.consecutive_errors
+		       i.status, COALESCE(i.environment, 'TEST'), i.polling_enabled, i.polling_interval_minutes, COALESCE(i.sync_batch_size, 10), i.last_sync_at, i.consecutive_errors
 		FROM integrations i
 		JOIN customers c ON i.customer_id = c.id
 		WHERE i.id = $1
@@ -105,7 +105,7 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 	var it domain.Integration
 	var custName string
 	if err := row.Scan(&it.ID, &it.CustomerID, &custName, &it.Name, &it.Provider, &it.BaseURL, &it.AuthType,
-		&it.Credentials, &it.Status, &it.Environment, &it.PollingEnabled, &it.PollingIntervalMinutes, &it.LastSyncAt, &it.ConsecutiveErrors); err != nil {
+		&it.Credentials, &it.Status, &it.Environment, &it.PollingEnabled, &it.PollingIntervalMinutes, &it.SyncBatchSize, &it.LastSyncAt, &it.ConsecutiveErrors); err != nil {
 		return nil, fmt.Errorf("integración no encontrada: %w", err)
 	}
 
