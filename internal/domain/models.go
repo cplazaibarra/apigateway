@@ -314,6 +314,7 @@ type CanonicalCustomer struct {
 type CanonicalDelivery struct {
 	Address    string `json:"address"`
 	City       string `json:"city"`
+	Commune    string `json:"commune"`
 	Region     string `json:"region"`
 	Country    string `json:"country"`
 	PostalCode string `json:"postal_code"`

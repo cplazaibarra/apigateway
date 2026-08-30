@@ -445,6 +445,8 @@ func (e *DefaultMappingEngine) assignRootField(c *domain.CanonicalOrder, field s
 		c.Delivery.Address = val
 	case "delivery.city":
 		c.Delivery.City = val
+	case "delivery.commune":
+		c.Delivery.Commune = val
 	case "delivery.region":
 		c.Delivery.Region = val
 	case "delivery.country":

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 	"time"
 
 	"order-integration-hub/internal/adapter"
@@ -172,15 +173,98 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 		}
 
 		if canonical == nil {
-			// Fallback direct extract
+			// Fallback: smart extraction of WooCommerce JSON fields when no mapping is configured
 			var gen map[string]interface{}
 			_ = json.Unmarshal(raw, &gen)
+
+			extID := fmt.Sprintf("%v", gen["id"])
+			orderNum := fmt.Sprintf("%v", gen["number"])
+			if orderNum == "" || orderNum == "<nil>" {
+				orderNum = extID
+			}
+			status := "PROCESSING"
+			if st, ok := gen["status"].(string); ok && st != "" {
+				status = strings.ToUpper(st)
+			}
+			currency := "CLP"
+			if cur, ok := gen["currency"].(string); ok && cur != "" {
+				currency = cur
+			}
+			var total float64
+			if totStr, ok := gen["total"].(string); ok {
+				fmt.Sscanf(totStr, "%f", &total)
+			} else if totNum, ok := gen["total"].(float64); ok {
+				total = totNum
+			}
+
+			// Extract customer from billing
+			var custName, custEmail, custPhone string
+			if billing, ok := gen["billing"].(map[string]interface{}); ok {
+				fn, _ := billing["first_name"].(string)
+				ln, _ := billing["last_name"].(string)
+				custName = strings.TrimSpace(fn + " " + ln)
+				custEmail, _ = billing["email"].(string)
+				custPhone, _ = billing["phone"].(string)
+			}
+
+			// Extract address: try meta_data first (Tienda 2 custom checkout plugin), then shipping
+			var address, city, commune string
+			if meta, ok := gen["meta_data"].(map[string]interface{}); ok {
+				if v, ok := meta["custom_delivery_address"].(string); ok && v != "" {
+					address = v
+				}
+				if v, ok := meta["custom_commune"].(string); ok && v != "" {
+					commune = v
+					city = v
+				}
+				if v, ok := meta["custom_region"].(string); ok && v != "" && city == "" {
+					city = v
+				}
+			}
+			// Fallback to standard shipping fields if meta_data was empty
+			if address == "" {
+				if shipping, ok := gen["shipping"].(map[string]interface{}); ok {
+					if v, ok := shipping["address_1"].(string); ok {
+						address = v
+					}
+					if v, ok := shipping["city"].(string); ok {
+						city = v
+						commune = v
+					}
+				}
+			}
+			// Final fallback: billing address
+			if address == "" {
+				if billing, ok := gen["billing"].(map[string]interface{}); ok {
+					if v, ok := billing["address_1"].(string); ok {
+						address = v
+					}
+					if commune == "" {
+						if v, ok := billing["city"].(string); ok {
+							city = v
+							commune = v
+						}
+					}
+				}
+			}
+
 			canonical = &domain.CanonicalOrder{
-				ExternalID:  fmt.Sprintf("%v", gen["id"]),
-				OrderNumber: fmt.Sprintf("%v", gen["number"]),
-				Status:      "PROCESSING",
-				Currency:    "CLP",
+				ExternalID:  extID,
+				OrderNumber: orderNum,
+				Status:      status,
+				Currency:    currency,
+				Total:       total,
 				CreatedAt:   time.Now(),
+				Customer: domain.CanonicalCustomer{
+					Name:  custName,
+					Email: custEmail,
+					Phone: custPhone,
+				},
+				Delivery: domain.CanonicalDelivery{
+					Address: address,
+					City:    city,
+					Commune: commune,
+				},
 			}
 		}
 
@@ -188,6 +272,12 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 
 		oID := "ord-" + uuid.New().String()[:8]
 		itemsJSON, _ := json.Marshal(canonical.Items)
+
+		// Resolve commune: prefer Delivery.Commune, fall back to Delivery.City
+		effectiveCommune := canonical.Delivery.Commune
+		if effectiveCommune == "" {
+			effectiveCommune = canonical.Delivery.City
+		}
 
 		var effectiveOrderID string
 		_ = s.db.QueryRowContext(ctx, "SELECT id FROM orders WHERE integration_id = $1 AND external_order_id = $2", integrationID, canonical.ExternalID).Scan(&effectiveOrderID)
@@ -200,7 +290,7 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 				    currency = $9, status = $10, item_count = $11, items = $12, raw_payload = $13, synced_at = NOW()
 				WHERE id = $14
 			`, canonical.OrderNumber, canonical.Customer.Email, canonical.Customer.Name, canonical.Customer.Phone,
-				canonical.Delivery.Address, canonical.Delivery.City, canonical.Delivery.City, canonical.Total,
+				canonical.Delivery.Address, canonical.Delivery.City, effectiveCommune, canonical.Total,
 				canonical.Currency, canonical.Status, len(canonical.Items), string(itemsJSON), string(raw), effectiveOrderID)
 		} else {
 			newOrders++
@@ -215,7 +305,7 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW())
 				ON CONFLICT (integration_id, external_order_id) DO NOTHING
 			`, effectiveOrderID, integrationID, canonical.ExternalID, canonical.OrderNumber, canonical.Customer.Email, canonical.Customer.Name,
-				canonical.Customer.Phone, canonical.Delivery.Address, canonical.Delivery.City, canonical.Delivery.City,
+				canonical.Customer.Phone, canonical.Delivery.Address, canonical.Delivery.City, effectiveCommune,
 				canonical.Total, canonical.Currency, canonical.Status, len(canonical.Items), string(itemsJSON), canonical.CreatedAt, string(raw))
 		}
 
