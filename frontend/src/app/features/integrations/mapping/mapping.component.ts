@@ -327,14 +327,14 @@ import {
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xl">🔬</span>
-              <h4 class="text-base font-bold text-slate-100">Prueba y Simulación Canónica en Vivo</h4>
+              <h4 class="text-base font-bold text-slate-100">Matriz de Verificación y Coherencia de Mapeo</h4>
             </div>
             <p class="text-xs text-slate-400 mt-1">
-              Verifica en tiempo real cómo las reglas de transformación convierten el payload JSON de la tienda en el pedido canónico unificado.
+              Compara directamente cada <strong class="text-slate-200">Campo Estándar</strong> con su <strong class="text-indigo-300">Ruta de Origen</strong> y el <strong class="text-emerald-400">Resultado Obtenido</strong> en la prueba para validar la coherencia de los datos.
             </p>
           </div>
           <button (click)="runLiveTest()" [disabled]="testingMapping()" class="btn btn-primary btn-sm flex items-center gap-2 px-4 py-2 font-semibold shadow-md whitespace-nowrap">
-            <span>⚡</span> {{ testingMapping() ? 'Simulando Mapeo...' : 'Re-ejecutar Simulación' }}
+            <span>⚡</span> {{ testingMapping() ? 'Simulando Mapeo...' : 'Re-ejecutar Prueba en Vivo' }}
           </button>
         </div>
 
@@ -354,113 +354,151 @@ import {
             </div>
           </div>
 
-          <!-- Order Summary Dashboard Cards -->
+          <!-- Quick KPI Cards -->
           <div *ngIf="previewResult.canonical_order" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-sm flex items-center justify-between">
               <div>
-                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Nº Pedido Canónico</span>
-                <div class="text-lg font-black text-emerald-400 mt-0.5">#{{ previewResult.canonical_order.order_number }}</div>
-                <div class="text-[11px] text-slate-400 font-mono">ID Ext: {{ previewResult.canonical_order.external_id }}</div>
+                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Nº Pedido</span>
+                <div class="text-base font-black text-emerald-400 mt-0.5">#{{ previewResult.canonical_order.order_number }}</div>
               </div>
-              <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg">
-                📦
-              </div>
+              <div class="text-lg">📦</div>
             </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-sm flex items-center justify-between">
               <div>
                 <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Estado Normalizado</span>
-                <div class="text-lg font-black text-indigo-400 mt-0.5">{{ previewResult.canonical_order.status }}</div>
-                <div class="text-[11px] text-slate-400">Listo para Gateway</div>
+                <div class="text-base font-black text-indigo-400 mt-0.5">{{ previewResult.canonical_order.status }}</div>
               </div>
-              <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-lg">
-                🔄
-              </div>
+              <div class="text-lg">🔄</div>
             </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-sm flex items-center justify-between">
               <div>
-                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Monto Total Facturado</span>
-                <div class="text-lg font-black text-amber-400 mt-0.5">
-                  \${{ previewResult.canonical_order.total | number:'1.0-0' }} <span class="text-xs font-normal text-slate-400">{{ previewResult.canonical_order.currency }}</span>
-                </div>
-                <div class="text-[11px] text-slate-400">Total con impuestos</div>
+                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Total Facturado</span>
+                <div class="text-base font-black text-amber-400 mt-0.5">\${{ previewResult.canonical_order.total | number:'1.0-0' }} {{ previewResult.canonical_order.currency }}</div>
               </div>
-              <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-lg">
-                💰
-              </div>
+              <div class="text-lg">💰</div>
             </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-sm flex items-center justify-between">
               <div>
-                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Líneas de Producto</span>
-                <div class="text-lg font-black text-purple-400 mt-0.5">{{ previewResult.canonical_order.items.length }} SKUs</div>
-                <div class="text-[11px] text-slate-400">Items normalizados</div>
+                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">SKUs / Líneas</span>
+                <div class="text-base font-black text-purple-400 mt-0.5">{{ previewResult.canonical_order.items.length }} Items</div>
               </div>
-              <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-lg">
-                🏷️
-              </div>
+              <div class="text-lg">🏷️</div>
             </div>
           </div>
 
-          <!-- Visual Comparison Columns: Customer & Shipping -->
-          <div *ngIf="previewResult.canonical_order" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Customer Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <span class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                  <span>👤</span> Datos del Cliente
-                </span>
-                <span class="badge badge-primary text-[10px]">Normalizado</span>
+          <!-- THE 3-COLUMN COHERENCE VERIFICATION TABLE -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+              <div class="flex items-center gap-2">
+                <span class="text-base">📋</span>
+                <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Tabla Comparativa: Estándar vs Origen vs Resultado</span>
               </div>
-
-              <div class="space-y-2 text-xs">
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Nombre Completo:</span>
-                  <span class="font-bold text-slate-100">{{ previewResult.canonical_order.customer.name || '(Vacío)' }}</span>
-                </div>
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Email:</span>
-                  <span class="font-mono text-indigo-300">{{ previewResult.canonical_order.customer.email || '(Vacío)' }}</span>
-                </div>
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Teléfono:</span>
-                  <span class="font-mono text-slate-200">{{ previewResult.canonical_order.customer.phone || '(Vacío)' }}</span>
-                </div>
-              </div>
+              <span class="badge badge-primary text-[11px] font-mono">
+                {{ getCoherenceRows().length }} campos evaluados
+              </span>
             </div>
 
-            <!-- Delivery & Address Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <span class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                  <span>📍</span> Despacho & Comuna
-                </span>
-                <span class="badge badge-primary text-[10px]">Normalizado</span>
-              </div>
+            <div class="table-container border-0 rounded-none bg-transparent">
+              <table>
+                <thead>
+                  <tr class="bg-slate-950/80">
+                    <th class="w-1/3 text-xs uppercase font-bold text-slate-300">
+                      1. Campo del Pedido Estandarizado
+                    </th>
+                    <th class="w-1/3 text-xs uppercase font-bold text-slate-300">
+                      2. Origen / Ruta de Búsqueda
+                    </th>
+                    <th class="w-1/3 text-xs uppercase font-bold text-slate-300">
+                      3. Resultado de la Consulta de Prueba
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of getCoherenceRows()" class="border-b border-slate-800/60 hover:bg-slate-800/30 transition">
+                    <!-- Column 1: Canonical Field -->
+                    <td class="py-3 px-4 align-top">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm">{{ row.icon }}</span>
+                        <div>
+                          <div class="font-mono font-bold text-xs text-slate-100">{{ row.fieldId }}</div>
+                          <div class="text-[11px] text-slate-400 mt-0.5">{{ row.fieldName }}</div>
+                        </div>
+                      </div>
+                    </td>
 
-              <div class="space-y-2 text-xs">
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Dirección:</span>
-                  <span class="font-bold text-emerald-400 text-right">{{ previewResult.canonical_order.delivery.address || '(Vacío)' }}</span>
-                </div>
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Comuna / Ciudad:</span>
-                  <span class="font-bold text-amber-400">{{ previewResult.canonical_order.delivery.city || '(Vacío)' }}</span>
-                </div>
-                <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                  <span class="text-slate-500">Región / País:</span>
-                  <span class="text-slate-300">{{ previewResult.canonical_order.delivery.region }} ({{ previewResult.canonical_order.delivery.country || 'CL' }})</span>
-                </div>
-              </div>
+                    <!-- Column 2: Source Path & Transformation -->
+                    <td class="py-3 px-4 align-top">
+                      <div *ngIf="row.sourcePath" class="space-y-1">
+                        <div class="font-mono text-xs text-indigo-300 bg-slate-950 px-2 py-1 rounded border border-indigo-500/20 inline-block font-semibold">
+                          {{ row.sourcePath }}
+                        </div>
+                        <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                          <span class="text-slate-500">Transformación:</span>
+                          <span class="code-badge text-[10px] font-bold" [ngClass]="{
+                            'text-indigo-400': row.transformation === 'COPY',
+                            'text-emerald-400': row.transformation === 'CONCAT',
+                            'text-purple-400': row.transformation === 'STATUS_MAP',
+                            'text-cyan-400': row.transformation === 'DATE_FORMAT',
+                            'text-amber-400': row.transformation === 'NUMBER' || row.transformation === 'DEFAULT'
+                          }">
+                            {{ row.transformation }}
+                          </span>
+                          <span *ngIf="row.isOverride" class="badge badge-primary text-[9px] py-0 px-1 font-bold">⚡ OVERRIDE</span>
+                        </div>
+                      </div>
+                      <div *ngIf="!row.sourcePath" class="text-xs text-slate-500 italic">
+                        (Sin ruta directa configurada)
+                      </div>
+                    </td>
+
+                    <!-- Column 3: Test Result Value & Coherence Check -->
+                    <td class="py-3 px-4 align-top">
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="space-y-1 flex-1">
+                          <!-- Display value -->
+                          <div *ngIf="row.hasValue" class="font-bold text-xs" [ngClass]="{
+                            'text-emerald-400': row.isCoherent,
+                            'text-slate-200': !row.isCoherent
+                          }">
+                            {{ row.value }}
+                          </div>
+                          <div *ngIf="!row.hasValue" class="text-xs text-slate-500 italic">
+                            (No obtenido / Vacío)
+                          </div>
+                          <!-- Detail or subtext -->
+                          <div *ngIf="row.detail" class="text-[10px] text-slate-400">
+                            {{ row.detail }}
+                          </div>
+                        </div>
+
+                        <!-- Coherence status pill -->
+                        <div class="flex-shrink-0">
+                          <span *ngIf="row.hasValue && row.isCoherent" class="badge badge-success text-[10px] flex items-center gap-1">
+                            <span>✅</span> Coherente
+                          </span>
+                          <span *ngIf="row.hasValue && !row.isCoherent" class="badge badge-muted text-[10px]">
+                            <span>ℹ️</span> Procesado
+                          </span>
+                          <span *ngIf="!row.hasValue && row.required" class="badge badge-danger text-[10px] flex items-center gap-1">
+                            <span>⚠️</span> Faltante
+                          </span>
+                          <span *ngIf="!row.hasValue && !row.required" class="badge badge-muted text-[10px]">
+                            Opcional
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Items Table Card -->
-          <div *ngIf="previewResult.canonical_order" class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-            <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between">
+          <!-- Items Table Breakdown -->
+          <div *ngIf="previewResult.canonical_order && previewResult.canonical_order.items.length > 0" class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
               <span class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <span>🛒</span> Desglose de Productos y SKUs Canónicos
+                <span>🛒</span> Desglose de Productos Canónicos Resultantes
               </span>
               <span class="text-xs text-slate-400 font-mono">{{ previewResult.canonical_order.items.length }} ítems</span>
             </div>
@@ -468,12 +506,12 @@ import {
             <div class="table-container border-0 rounded-none bg-transparent">
               <table>
                 <thead>
-                  <tr>
-                    <th>SKU Canónico</th>
-                    <th>Descripción / Producto</th>
-                    <th class="text-center">Cantidad</th>
-                    <th class="text-right">Precio Unitario</th>
-                    <th class="text-right">Total Línea</th>
+                  <tr class="bg-slate-950/80">
+                    <th>SKU Canónico (items[].sku)</th>
+                    <th>Descripción / Producto (items[].description)</th>
+                    <th class="text-center">Cantidad (items[].quantity)</th>
+                    <th class="text-right">Precio Unitario (items[].unit_price)</th>
+                    <th class="text-right">Total Línea (items[].total)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -504,7 +542,7 @@ import {
           <div class="text-3xl">🔬</div>
           <div class="text-sm font-bold text-slate-200">Sin simulación ejecutada</div>
           <p class="text-xs text-slate-400 max-w-md mx-auto">
-            Haz clic en "Re-ejecutar Simulación" para probar tus reglas de mapeo en vivo con un payload real de la tienda.
+            Haz clic en "Re-ejecutar Prueba en Vivo" para consultar la tienda y validar la coherencia de todos los campos mapeados.
           </p>
           <button (click)="runLiveTest()" [disabled]="testingMapping()" class="btn btn-primary btn-sm">
             ⚡ Ejecutar Prueba en Vivo
@@ -968,6 +1006,143 @@ export class DynamicMappingComponent implements OnInit {
   getCanonicalFieldTitle(fieldId: string): string {
     const cf = this.canonicalFields().find(f => f.id === fieldId);
     return cf ? cf.name : '';
+  }
+
+  getCoherenceRows(): Array<{
+    fieldId: string;
+    fieldName: string;
+    icon: string;
+    sourcePath: string;
+    transformation: string;
+    isOverride: boolean;
+    required: boolean;
+    hasValue: boolean;
+    value: string;
+    detail: string;
+    isCoherent: boolean;
+  }> {
+    const order = this.previewResult?.canonical_order;
+    const mappings = this.activeMappings();
+
+    const fieldsToInspect = [
+      { id: 'order.order_number', name: 'Número de Pedido', icon: '📦', req: true },
+      { id: 'order.id', name: 'ID Externo Tienda', icon: '🔑', req: true },
+      { id: 'order.status', name: 'Estado Normalizado', icon: '🔄', req: true },
+      { id: 'order.created_at', name: 'Fecha de Emisión', icon: '📅', req: true },
+      { id: 'order.total', name: 'Monto Total Facturado', icon: '💰', req: true },
+      { id: 'order.currency', name: 'Moneda', icon: '💵', req: false },
+      { id: 'customer.name', name: 'Nombre Completo del Cliente', icon: '👤', req: true },
+      { id: 'customer.email', name: 'Email del Cliente', icon: '✉️', req: true },
+      { id: 'customer.phone', name: 'Teléfono del Cliente', icon: '📞', req: false },
+      { id: 'delivery.address', name: 'Dirección de Despacho', icon: '📍', req: true },
+      { id: 'delivery.city', name: 'Comuna / Ciudad de Entrega', icon: '🏘️', req: true },
+      { id: 'delivery.commune', name: 'Comuna Específica', icon: '🏘️', req: false },
+      { id: 'delivery.region', name: 'Región / Estado', icon: '🗺️', req: false },
+      { id: 'delivery.country', name: 'País de Despacho', icon: '🇨🇱', req: false },
+      { id: 'items[].sku', name: 'SKU de Artículos', icon: '🏷️', req: true },
+      { id: 'items[].description', name: 'Descripción de Productos', icon: '📝', req: true },
+      { id: 'items[].quantity', name: 'Cantidad Comprada', icon: '🔢', req: true },
+      { id: 'items[].unit_price', name: 'Precio Unitario', icon: '💲', req: true },
+      { id: 'items[].total', name: 'Total Línea de Ítem', icon: '📊', req: false }
+    ];
+
+    return fieldsToInspect.map(f => {
+      const mapping = mappings.find(m => m.canonical_field === f.id);
+      let value = '';
+      let detail = '';
+      let hasValue = false;
+      let isCoherent = false;
+
+      if (order) {
+        switch (f.id) {
+          case 'order.order_number':
+            value = order.order_number ? `#${order.order_number}` : '';
+            break;
+          case 'order.id':
+            value = order.external_id || order.id || '';
+            break;
+          case 'order.status':
+            value = order.status || '';
+            break;
+          case 'order.created_at':
+            value = order.created_at ? new Date(order.created_at).toLocaleString() : '';
+            break;
+          case 'order.total':
+            value = order.total !== undefined ? `$${order.total.toLocaleString()} ${order.currency || 'CLP'}` : '';
+            break;
+          case 'order.currency':
+            value = order.currency || '';
+            break;
+          case 'customer.name':
+            value = order.customer?.name || '';
+            break;
+          case 'customer.email':
+            value = order.customer?.email || '';
+            break;
+          case 'customer.phone':
+            value = order.customer?.phone || '';
+            break;
+          case 'delivery.address':
+            value = order.delivery?.address || '';
+            break;
+          case 'delivery.city':
+            value = order.delivery?.city || '';
+            break;
+          case 'delivery.commune':
+            value = order.delivery?.city || order.delivery?.address || '';
+            break;
+          case 'delivery.region':
+            value = order.delivery?.region || '';
+            break;
+          case 'delivery.country':
+            value = order.delivery?.country || 'CL';
+            break;
+          case 'items[].sku':
+            if (order.items && order.items.length > 0) {
+              value = order.items.map(it => it.sku).join(', ');
+              detail = `${order.items.length} SKU(s) extraídos`;
+            }
+            break;
+          case 'items[].description':
+            if (order.items && order.items.length > 0) {
+              value = order.items.map(it => it.description).join(', ');
+            }
+            break;
+          case 'items[].quantity':
+            if (order.items && order.items.length > 0) {
+              value = order.items.map(it => `${it.quantity} un.`).join(', ');
+            }
+            break;
+          case 'items[].unit_price':
+            if (order.items && order.items.length > 0) {
+              value = order.items.map(it => `$${it.unit_price}`).join(', ');
+            }
+            break;
+          case 'items[].total':
+            if (order.items && order.items.length > 0) {
+              value = order.items.map(it => `$${it.total}`).join(', ');
+            }
+            break;
+        }
+      }
+
+      hasValue = !!value && value.trim() !== '' && value !== '$undefined undefined';
+      isCoherent = hasValue && (!mapping || mapping.enabled !== false);
+
+      return {
+        fieldId: f.id,
+        fieldName: f.name,
+        icon: f.icon,
+        sourcePath: mapping?.source_path || (mapping?.default_value ? `(Default: "${mapping.default_value}")` : ''),
+        transformation: mapping?.transformation || 'COPY',
+        isOverride: mapping?.mapping_type === 'OVERRIDE',
+        required: f.req,
+        hasValue,
+        value: hasValue ? value : '',
+        detail,
+        isCoherent
+      };
+    });
   }
 
   fetchSampleOrder() {
