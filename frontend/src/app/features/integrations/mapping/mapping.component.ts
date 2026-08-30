@@ -615,29 +615,64 @@ import {
                 <div class="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2">
                     <span class="text-base">📋</span>
-                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Matriz de Claves y Valores del Payload de Origen</span>
+                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Matriz de Asignación y Selección de Datos Extraídos</span>
                   </div>
-                  <span class="badge badge-primary text-[11px] font-mono">
-                    {{ flattenedSampleKeys.length }} nodos detectados
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-primary text-[11px] font-mono">
+                      {{ flattenedSampleKeys.length }} nodos detectados
+                    </span>
+                    <span class="badge badge-success text-[11px] font-mono">
+                      {{ activeMappings().length }} reglas asignadas
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                  <p>
+                    💡 <strong>Cómo funciona:</strong> En la <strong>Columna 3</strong> ves el dato real extraído. Selecciona en el selector de la <strong>Columna 1</strong> a qué campo estándar del pedido corresponde y haz clic en <strong>⚡ Asignar</strong>.
+                  </p>
                 </div>
 
                 <div class="table-container border-0 rounded-none bg-transparent max-h-[55vh] overflow-y-auto">
                   <table class="w-full text-left">
                     <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800 text-xs sticky top-0 z-10">
                       <tr>
-                        <th class="w-1/2 p-3 font-bold uppercase text-slate-400">Ruta / Clave JSON (Source Path)</th>
-                        <th class="w-1/2 p-3 font-bold uppercase text-slate-400">Valor Extraído en Pedido de Muestra</th>
+                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">1. Campo del Pedido Estandarizado (Objetivo)</th>
+                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">2. Ruta de Origen (Source Path)</th>
+                        <th class="w-1/3 p-3 font-bold uppercase text-slate-300">3. Valor Extraído en Tienda (Muestra)</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800/80 font-mono text-xs">
                       <tr *ngFor="let item of flattenedSampleKeys" class="hover:bg-slate-900/50 transition">
-                        <td class="p-3 align-top">
+                        <!-- Column 1: Canonical Field Selector & Action -->
+                        <td class="p-3 align-middle">
+                          <div class="space-y-1.5">
+                            <div class="flex items-center gap-2">
+                              <select [(ngModel)]="sampleKeyAssignments[item.path]" class="form-select text-xs py-1 px-2 bg-slate-900 border-slate-800 text-slate-200 rounded w-full">
+                                <option value="">-- Seleccionar Campo Canónico --</option>
+                                <option *ngFor="let cf of canonicalFields()" [value]="cf.id">
+                                  {{ cf.id }} ({{ cf.name }})
+                                </option>
+                              </select>
+                              <button (click)="assignSampleKeyToCanonical(item.path)" [disabled]="!sampleKeyAssignments[item.path]" class="btn btn-primary btn-sm text-[11px] py-1 px-2.5 whitespace-nowrap" title="Guardar mapeo directo">
+                                ⚡ Asignar
+                              </button>
+                            </div>
+                            <div *ngIf="getAssignedCanonicalForPath(item.path)" class="text-[11px] text-emerald-400 flex items-center gap-1 font-sans">
+                              <span>✅ Asignado actualmente a:</span> <strong class="font-mono text-indigo-300">{{ getAssignedCanonicalForPath(item.path) }}</strong>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- Column 2: JSON Source Path -->
+                        <td class="p-3 align-middle">
                           <span class="text-indigo-300 font-bold bg-slate-900 px-2 py-1 rounded border border-indigo-500/20 inline-block">
                             {{ item.path }}
                           </span>
                         </td>
-                        <td class="p-3 align-top text-emerald-400 font-semibold break-all">
+
+                        <!-- Column 3: Extracted Value -->
+                        <td class="p-3 align-middle text-emerald-400 font-semibold break-all bg-slate-950/40">
                           {{ item.value }}
                         </td>
                       </tr>
@@ -1339,6 +1374,53 @@ export class DynamicMappingComponent implements OnInit {
     };
     recurse('', obj);
     this.flattenedSampleKeys = list;
+    // Pre-populate sampleKeyAssignments based on existing mappings
+    this.activeMappings().forEach(m => {
+      if (m.source_path) {
+        this.sampleKeyAssignments[m.source_path] = m.canonical_field;
+      }
+    });
+  }
+
+  sampleKeyAssignments: { [sourcePath: string]: string } = {};
+
+  getAssignedCanonicalForPath(path: string): string {
+    const found = this.activeMappings().find(m => m.source_path === path);
+    return found ? found.canonical_field : '';
+  }
+
+  assignSampleKeyToCanonical(path: string) {
+    const canonicalField = this.sampleKeyAssignments[path];
+    if (!canonicalField) return;
+
+    const mappings = [...this.activeMappings()];
+    const idx = mappings.findIndex(m => m.canonical_field === canonicalField);
+    const newRule: FieldMapping = {
+      canonical_field: canonicalField,
+      source_path: path,
+      transformation: 'COPY',
+      data_type: 'STRING',
+      mapping_type: 'OVERRIDE',
+      required: true,
+      default_value: '',
+      enabled: true
+    };
+
+    if (idx >= 0) {
+      mappings[idx] = newRule;
+    } else {
+      mappings.push(newRule);
+    }
+
+    this.api.saveIntegrationMapping(this.integrationId, mappings).subscribe({
+      next: (res) => {
+        this.mappingResult.set(res);
+        this.activeMappings.set(res.mappings);
+        this.toast.success(`✅ ${canonicalField} asignado a ${path}`);
+        this.loadVersions();
+      },
+      error: (err) => this.toast.error('Error guardando mapeo: ' + (err.error?.error || err.message))
+    });
   }
 
   selectPathFromTree(path: string) {
