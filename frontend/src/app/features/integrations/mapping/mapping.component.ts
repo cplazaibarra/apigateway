@@ -572,9 +572,53 @@ export class DynamicMappingComponent implements OnInit {
 
     // Pre-populate assignments from active mappings
     this.sampleKeyAssignments = {};
-    this.activeMappings().forEach(m => {
+    const active = this.activeMappings();
+    
+    // 1. Direct match on activeMappings source_path
+    active.forEach(m => {
       if (m.source_path) {
         this.sampleKeyAssignments[m.source_path] = m.canonical_field;
+      }
+    });
+
+    // 2. Also match by known standard aliases if not overridden
+    const pathToCanonicalAliases: { [path: string]: string } = {
+      'id': 'order.id',
+      'number': 'order.order_number',
+      'status': 'order.status',
+      'total': 'order.total',
+      'currency': 'order.currency',
+      'date_created': 'order.created_at',
+      'billing.first_name': 'customer.name',
+      'billing.email': 'customer.email',
+      'billing.phone': 'customer.phone',
+      'billing.address_1': 'delivery.address',
+      'billing.city': 'delivery.city',
+      'billing.state': 'delivery.region',
+      'billing.country': 'delivery.country',
+      'billing.postcode': 'delivery.postal_code',
+      'shipping.address_1': 'delivery.address',
+      'shipping.city': 'delivery.city',
+      'shipping.state': 'delivery.region',
+      'shipping.country': 'delivery.country',
+      'shipping.postcode': 'delivery.postal_code',
+      'line_items[].sku': 'items[].sku',
+      'line_items[].name': 'items[].description',
+      'line_items[].quantity': 'items[].quantity',
+      'line_items[].price': 'items[].unit_price',
+      'line_items[].total': 'items[].total'
+    };
+
+    this.flattenedSampleKeys.forEach(item => {
+      if (!this.sampleKeyAssignments[item.path]) {
+        // check if any active mapping matches this canonical
+        const aliasTarget = pathToCanonicalAliases[item.path];
+        if (aliasTarget) {
+          const mappingExists = active.find(m => m.canonical_field === aliasTarget && m.enabled);
+          if (mappingExists) {
+            this.sampleKeyAssignments[item.path] = aliasTarget;
+          }
+        }
       }
     });
   }

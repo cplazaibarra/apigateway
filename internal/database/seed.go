@@ -470,11 +470,11 @@ func (db *DB) EnsureCanonicalFieldsAndMappings(ctx context.Context) error {
 		{"fm-wc-def-08", "customer.email", "billing.email", "STRING", "", "LOWERCASE", nil, true, 10},
 		{"fm-wc-def-09", "customer.phone", "billing.phone", "STRING", "", "COPY", nil, false, 10},
 
-		{"fm-wc-def-10", "delivery.address", "shipping.address_1", "STRING", "", "COPY", nil, true, 10},
-		{"fm-wc-def-11", "delivery.city", "shipping.city", "STRING", "", "COPY", nil, true, 10},
-		{"fm-wc-def-12", "delivery.region", "shipping.state", "STRING", "Región Metropolitana", "DEFAULT", nil, false, 10},
-		{"fm-wc-def-13", "delivery.country", "shipping.country", "STRING", "CL", "DEFAULT", nil, false, 10},
-		{"fm-wc-def-14", "delivery.postal_code", "shipping.postcode", "STRING", "", "COPY", nil, false, 10},
+		{"fm-wc-def-10", "delivery.address", "billing.address_1", "STRING", "", "COPY", nil, true, 10},
+		{"fm-wc-def-11", "delivery.city", "billing.city", "STRING", "", "COPY", nil, true, 10},
+		{"fm-wc-def-12", "delivery.region", "billing.state", "STRING", "Región Metropolitana", "DEFAULT", nil, false, 10},
+		{"fm-wc-def-13", "delivery.country", "billing.country", "STRING", "CL", "DEFAULT", nil, false, 10},
+		{"fm-wc-def-14", "delivery.postal_code", "billing.postcode", "STRING", "", "COPY", nil, false, 10},
 
 		{"fm-wc-def-15", "items[].sku", "line_items[].sku", "STRING", "", "COPY", nil, true, 10},
 		{"fm-wc-def-16", "items[].external_product_id", "line_items[].product_id", "STRING", "", "COPY", nil, false, 10},
