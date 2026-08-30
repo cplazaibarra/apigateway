@@ -55,6 +55,24 @@ services:
     networks:
       - order-hub-net
 
+  woocomerce-tienda3:
+    build:
+      context: .
+      dockerfile: Dockerfile.woocommerce
+    container_name: woocomerce-tienda3
+    restart: unless-stopped
+    environment:
+      STORE_ID: "tienda3"
+      STORE_NAME: "Tienda 3 - Hogar & Oficina Premium SpA"
+      CURRENCY: "CLP"
+      WC_KEY: "ck_tienda3_live_c9d32f"
+      WC_SECRET: "cs_tienda3_secret_77e2b"
+      PORT: "8080"
+    ports:
+      - "8085:8080"
+    networks:
+      - order-hub-net
+
   order-api:
     build:
       context: .

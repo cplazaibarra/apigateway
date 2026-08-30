@@ -325,6 +325,10 @@ func (db *DB) EnsureWooCommerceStores(ctx context.Context) error {
 		"consumer_key":    "ck_tienda2_live_b7c21e",
 		"consumer_secret": "cs_tienda2_secret_44f8d",
 	})
+	cred3, _ := json.Marshal(map[string]string{
+		"consumer_key":    "ck_tienda3_live_c9d32f",
+		"consumer_secret": "cs_tienda3_secret_77e2b",
+	})
 
 	// 3. Ensure Integration 1 (Tienda 1)
 	_, err = db.ExecContext(ctx, `
@@ -346,7 +350,27 @@ func (db *DB) EnsureWooCommerceStores(ctx context.Context) error {
 		return err
 	}
 
-	log.Println("[Database] WooCommerce Stores (Tienda 1 & Tienda 2) registered and active in Hub")
+	// 5. Ensure Customer 3 (Tienda 3)
+	_, err = db.ExecContext(ctx, `
+		INSERT INTO customers (id, name, email, phone, address, status, plan, created_at, updated_at)
+		VALUES ('cust-tienda3', 'Hogar & Oficina Premium SpA', 'admin@hogar-oficina.cl', '+56 2 3456 7890', 'Av. Del Valle 945, Of. 321, Huechuraba', 'ACTIVE', 'PROFESSIONAL', NOW(), NOW())
+		ON CONFLICT (id) DO NOTHING
+	`)
+	if err != nil {
+		return err
+	}
+
+	// 6. Ensure Integration 3 (Tienda 3 - WooComuna Pro plugin)
+	_, err = db.ExecContext(ctx, `
+		INSERT INTO integrations (id, customer_id, name, provider, base_url, auth_type, credentials, polling_interval_minutes, polling_enabled, status, created_at, updated_at)
+		VALUES ('int-wc-tienda3', 'cust-tienda3', 'Tienda 3 - WooComuna Pro Plugin', 'WOOCOMMERCE', 'http://woocomerce-tienda3:8080/wp-json/wc/v3', 'API_KEY', $1, 5, true, 'ACTIVE', NOW(), NOW())
+		ON CONFLICT (id) DO UPDATE SET base_url = EXCLUDED.base_url, credentials = EXCLUDED.credentials, status = 'ACTIVE', polling_enabled = true
+	`, cred3)
+	if err != nil {
+		return err
+	}
+
+	log.Println("[Database] WooCommerce Stores (Tienda 1, 2 & 3) registered and active in Hub")
 	return db.EnsureCanonicalFieldsAndMappings(ctx)
 }
 
@@ -373,9 +397,10 @@ func (db *DB) EnsureCanonicalFieldsAndMappings(ctx context.Context) error {
 		{"customer.email", "Email Contacto", "customer", "STRING", "Correo electrónico del cliente", "carlos.plaza@ejemplo.cl", true, []string{"email", "billing.email", "contact_email"}},
 		{"customer.phone", "Teléfono Contacto", "customer", "STRING", "Número de contacto del cliente", "+56 9 9123 4567", false, []string{"phone", "billing.phone", "telephone", "mobile"}},
 
-		{"delivery.address", "Dirección de Entrega", "delivery", "STRING", "Calle y número de despacho", "Av. Providencia 1240, Depto 502", true, []string{"address", "address_1", "shipping.address_1", "street", "custom_delivery_address"}},
-		{"delivery.city", "Comuna / Ciudad", "delivery", "STRING", "Comuna o ciudad de entrega", "Providencia", true, []string{"city", "shipping.city", "commune", "comuna", "custom_commune"}},
-		{"delivery.region", "Región / Provincia", "delivery", "STRING", "Región o estado administrativo", "Región Metropolitana", false, []string{"state", "region", "province", "shipping.state"}},
+		{"delivery.address", "Dirección de Entrega", "delivery", "STRING", "Calle y número de despacho", "Av. Providencia 1240, Depto 502", true, []string{"address", "address_1", "shipping.address_1", "street", "custom_delivery_address", "woo_direccion_completa"}},
+		{"delivery.city", "Comuna / Ciudad", "delivery", "STRING", "Comuna o ciudad de entrega", "Providencia", true, []string{"city", "shipping.city", "commune", "comuna", "custom_commune", "woo_barrio"}},
+		{"delivery.commune", "Comuna Específica", "delivery", "STRING", "Comuna específica de despacho", "Providencia", false, []string{"commune", "custom_commune", "woo_barrio", "barrio"}},
+		{"delivery.region", "Región / Provincia", "delivery", "STRING", "Región o estado administrativo", "Región Metropolitana", false, []string{"state", "region", "province", "shipping.state", "woo_region_entrega"}},
 		{"delivery.country", "País", "delivery", "STRING", "Código de país de despacho", "CL", false, []string{"country", "shipping.country", "country_code"}},
 		{"delivery.postal_code", "Código Postal", "delivery", "STRING", "Código postal o ZIP", "7500000", false, []string{"postcode", "postal_code", "zip", "shipping.postcode"}},
 		{"delivery.contact", "Contacto Entrega", "delivery", "STRING", "Persona que recibe el pedido", "Carlos Plaza", false, []string{"contact", "recipient", "receiver"}},
@@ -482,7 +507,7 @@ func (db *DB) EnsureCanonicalFieldsAndMappings(ctx context.Context) error {
 		}
 	}
 
-	// 4. Seed Overrides for Tienda 2 (Cliente B with custom metadata plugin)
+	// 4. Seed Overrides for Tienda 2 (Custom Checkout plugin)
 	overrides := []struct {
 		id, canonicalField, sourcePath, dataType, defaultVal, transform string
 	}{
@@ -508,12 +533,41 @@ func (db *DB) EnsureCanonicalFieldsAndMappings(ctx context.Context) error {
 		}
 	}
 
-	// 5. Seed initial snapshot versions for Tienda 1 and Tienda 2
+	// 5. Seed Overrides for Tienda 3 (WooComuna Pro plugin - completely different field names)
+	overridesT3 := []struct {
+		id, canonicalField, sourcePath, dataType, defaultVal, transform string
+	}{
+		{"fm-ovr-t3-01", "delivery.address", "meta_data.woo_direccion_completa", "STRING", "", "COPY"},
+		{"fm-ovr-t3-02", "delivery.city", "meta_data.woo_barrio", "STRING", "", "COPY"},
+		{"fm-ovr-t3-03", "delivery.commune", "meta_data.woo_barrio", "STRING", "", "COPY"},
+		{"fm-ovr-t3-04", "delivery.region", "meta_data.woo_region_entrega", "STRING", "Región Metropolitana", "DEFAULT"},
+		{"fm-ovr-t3-05", "customer.document", "meta_data.woo_rut_cliente", "STRING", "", "COPY"},
+	}
+
+	for _, ov := range overridesT3 {
+		_, err := db.ExecContext(ctx, `
+			INSERT INTO field_mappings (
+				id, integration_id, canonical_field, source_path, mapping_type,
+				data_type, required, default_value, transformation, transformation_params,
+				priority, enabled, created_at, updated_at
+			)
+			VALUES ($1, 'int-wc-tienda3', $2, $3, 'OVERRIDE', $4, true, $5, $6, '{}'::jsonb, 100, true, NOW(), NOW())
+			ON CONFLICT (id) DO UPDATE SET
+				canonical_field = EXCLUDED.canonical_field, source_path = EXCLUDED.source_path,
+				default_value = EXCLUDED.default_value, transformation = EXCLUDED.transformation, enabled = true
+		`, ov.id, ov.canonicalField, ov.sourcePath, ov.dataType, ov.defaultVal, ov.transform)
+		if err != nil {
+			return fmt.Errorf("error seeding override mapping Tienda 3 %s: %w", ov.id, err)
+		}
+	}
+
+	// 6. Seed initial snapshot versions for all 3 Tiendas
 	_, _ = db.ExecContext(ctx, `
 		INSERT INTO mapping_versions (id, integration_id, version, mapping_snapshot, description, created_by, created_at)
 		VALUES
-		  ('mver-t1-v1', 'int-wc-tienda1', 1, '[]'::jsonb, 'Versión inicial estándar WooCommerce', 'system', NOW() - INTERVAL '1 hour'),
-		  ('mver-t2-v1', 'int-wc-tienda2', 1, '[{"canonical_field":"delivery.address","source_path":"meta_data.custom_delivery_address","transformation":"COPY","mapping_type":"OVERRIDE"}]'::jsonb, 'Versión inicial con plugin custom de despacho', 'system', NOW() - INTERVAL '1 hour')
+		  ('mver-t1-v1', 'int-wc-tienda1', 1, '[]'::jsonb, 'Versión inicial estándar WooCommerce (shipping.*)', 'system', NOW() - INTERVAL '1 hour'),
+		  ('mver-t2-v1', 'int-wc-tienda2', 1, '[{"canonical_field":"delivery.address","source_path":"meta_data.custom_delivery_address","transformation":"COPY","mapping_type":"OVERRIDE"}]'::jsonb, 'Plugin Custom Checkout: meta_data.custom_delivery_address / custom_commune', 'system', NOW() - INTERVAL '1 hour'),
+		  ('mver-t3-v1', 'int-wc-tienda3', 1, '[{"canonical_field":"delivery.address","source_path":"meta_data.woo_direccion_completa","transformation":"COPY","mapping_type":"OVERRIDE"},{"canonical_field":"delivery.city","source_path":"meta_data.woo_barrio","transformation":"COPY","mapping_type":"OVERRIDE"}]'::jsonb, 'Plugin WooComuna Pro: woo_barrio / woo_direccion_completa / woo_region_entrega', 'system', NOW() - INTERVAL '1 hour')
 		ON CONFLICT (id) DO NOTHING
 	`)
 

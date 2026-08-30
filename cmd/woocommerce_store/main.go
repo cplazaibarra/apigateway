@@ -38,9 +38,16 @@ type WCShipping struct {
 }
 
 type WCMetaData struct {
+	// Tienda 2 - Plugin "Custom Checkout" fields
 	CustomDeliveryAddress string `json:"custom_delivery_address,omitempty"`
 	CustomCommune         string `json:"custom_commune,omitempty"`
 	CustomRegion          string `json:"custom_region,omitempty"`
+	// Tienda 3 - Plugin "WooComuna Pro" fields (completely different key names)
+	WooBarrio            string `json:"woo_barrio,omitempty"`
+	WooRegionEntrega     string `json:"woo_region_entrega,omitempty"`
+	WooDireccionCompleta string `json:"woo_direccion_completa,omitempty"`
+	WooRutCliente        string `json:"woo_rut_cliente,omitempty"`
+	WooInstrucciones     string `json:"woo_instrucciones_entrega,omitempty"`
 }
 
 type WCLineItem struct {
@@ -129,6 +136,11 @@ func (s *StoreServer) seedInitialOrders() {
 				{ID: id*10 + 1, Name: "Chaqueta Cortaviento Térmica", ProductID: 412, Quantity: 1, Price: 49990, Total: "49990", Subtotal: "49990", SKU: "MODA-CHQ-01"},
 				{ID: id*10 + 2, Name: "Zapatillas Running Pro Sport", ProductID: 588, Quantity: 1, Price: 69990, Total: "69990", Subtotal: "69990", SKU: "MODA-ZAP-02"},
 			}
+		} else if s.storeID == "tienda3" {
+			items = []WCLineItem{
+				{ID: id*10 + 1, Name: "Silla Ergonómica Home Office Premium", ProductID: 701, Quantity: 1, Price: 189990, Total: "189990", Subtotal: "189990", SKU: "HOGAR-SIL-01"},
+				{ID: id*10 + 2, Name: "Escritorio Regulable en Altura", ProductID: 702, Quantity: 1, Price: 299990, Total: "299990", Subtotal: "299990", SKU: "HOGAR-ESC-02"},
+			}
 		} else {
 			items = []WCLineItem{
 				{ID: id*10 + 1, Name: "Monitor Gamer IPS 27'' 165Hz", ProductID: 104, Quantity: 1, Price: 189990, Total: "189990", Subtotal: "189990", SKU: "TECH-MON-27"},
@@ -155,6 +167,16 @@ func (s *StoreServer) seedInitialOrders() {
 				Postcode:  "7500000",
 				Country:   "CL",
 				Phone:     c.phone,
+			}
+		} else if s.storeID == "tienda3" {
+			// Tienda 3 - Plugin "WooComuna Pro": uses completely different meta_data key names
+			// Field structure is totally distinct from both Tienda 1 and Tienda 2
+			meta = WCMetaData{
+				WooDireccionCompleta: c.address,
+				WooBarrio:            c.comuna,
+				WooRegionEntrega:     c.region,
+				WooRutCliente:        fmt.Sprintf("%d.%d.%d-%d", id%10+1, (id*7)%999, (id*3)%999, id%9),
+				WooInstrucciones:     "Dejar en conserjería si no hay nadie",
 			}
 		} else {
 			// Customized WooCommerce Store (Tienda 2): Custom checkout plugin stores address in meta_data
@@ -428,6 +450,13 @@ func (s *StoreServer) handleCreateRandomOrder(w http.ResponseWriter, r *http.Req
 		items = []WCLineItem{
 			{ID: id*10 + 1, Name: "Polera Algodón Pima Orgánico", ProductID: 101, Quantity: 2, Price: 19990, Total: "39980", Subtotal: "39980", SKU: "MODA-POL-01"},
 		}
+	} else if s.storeID == "tienda3" {
+		hogarItems := []WCLineItem{
+			{ID: id*10 + 1, Name: "Silla Ergonómica Home Office Premium", ProductID: 701, Quantity: 1, Price: 189990, Total: "189990", Subtotal: "189990", SKU: "HOGAR-SIL-01"},
+			{ID: id*10 + 1, Name: "Lámpara LED Escritorio Regulable", ProductID: 703, Quantity: 2, Price: 34990, Total: "69980", Subtotal: "69980", SKU: "HOGAR-LMP-03"},
+			{ID: id*10 + 1, Name: "Monitor Curvo 34'' UltraWide", ProductID: 704, Quantity: 1, Price: 449990, Total: "449990", Subtotal: "449990", SKU: "HOGAR-MON-34"},
+		}
+		items = []WCLineItem{hogarItems[rand.Intn(len(hogarItems))]}
 	} else {
 		items = []WCLineItem{
 			{ID: id*10 + 1, Name: "Auriculares Wireless Noise Cancelling", ProductID: 305, Quantity: 1, Price: 89990, Total: "89990", Subtotal: "89990", SKU: "TECH-AUD-NC"},
@@ -452,6 +481,15 @@ func (s *StoreServer) handleCreateRandomOrder(w http.ResponseWriter, r *http.Req
 			Postcode:  "7500000",
 			Country:   "CL",
 			Phone:     loc.phone,
+		}
+	} else if s.storeID == "tienda3" {
+		// Plugin "WooComuna Pro" - completely different meta_data keys
+		meta = WCMetaData{
+			WooDireccionCompleta: loc.address,
+			WooBarrio:            loc.comuna,
+			WooRegionEntrega:     loc.region,
+			WooRutCliente:        fmt.Sprintf("%d.%d.%d-%d", id%10+1, (id*7)%999, (id*3)%999, id%9),
+			WooInstrucciones:     "Llamar antes de llegar",
 		}
 	} else {
 		meta = WCMetaData{
@@ -511,6 +549,16 @@ func (s *StoreServer) handleUI(w http.ResponseWriter, r *http.Request) {
 		pluginNote = `<div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-bottom: 1rem;">
 			🔌 <strong>Plugin de Checkout Activo:</strong> Las direcciones de despacho se almacenan en <code>meta_data.custom_delivery_address</code> en lugar de <code>shipping.address_1</code>.
 		</div>`
+	} else if s.storeID == "tienda3" {
+		pluginNote = `<div style="background: #fdf4ff; border: 1px solid #e9d5ff; color: #7e22ce; border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-bottom: 1rem;">
+			🔌 <strong>Plugin WooComuna Pro Activo:</strong> Esta tienda usa campos completamente distintos:
+			<code>meta_data.woo_barrio</code> (comuna),
+			<code>meta_data.woo_region_entrega</code> (región),
+			<code>meta_data.woo_direccion_completa</code> (dirección),
+			<code>meta_data.woo_rut_cliente</code> (RUT),
+			<code>meta_data.woo_instrucciones_entrega</code> (instrucciones) —
+			requiere mapeo de campos diferente al de Tienda 1 y Tienda 2.
+			</div>`
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -584,7 +632,10 @@ func (s *StoreServer) handleUI(w http.ResponseWriter, r *http.Request) {
 
 		addrDisplay := o.Shipping.Address1
 		if addrDisplay == "" {
-			addrDisplay = o.MetaData.CustomDeliveryAddress
+			addrDisplay = o.MetaData.WooDireccionCompleta // Tienda 3: WooComuna Pro
+		}
+		if addrDisplay == "" {
+			addrDisplay = o.MetaData.CustomDeliveryAddress // Tienda 2: Custom Checkout
 		}
 		if addrDisplay == "" {
 			addrDisplay = o.Billing.Address1
@@ -592,7 +643,10 @@ func (s *StoreServer) handleUI(w http.ResponseWriter, r *http.Request) {
 
 		cityDisplay := o.Shipping.City
 		if cityDisplay == "" {
-			cityDisplay = o.MetaData.CustomCommune
+			cityDisplay = o.MetaData.WooBarrio // Tienda 3: WooComuna Pro
+		}
+		if cityDisplay == "" {
+			cityDisplay = o.MetaData.CustomCommune // Tienda 2: Custom Checkout
 		}
 		if cityDisplay == "" {
 			cityDisplay = o.Billing.City
@@ -600,7 +654,10 @@ func (s *StoreServer) handleUI(w http.ResponseWriter, r *http.Request) {
 
 		stateDisplay := o.Shipping.State
 		if stateDisplay == "" {
-			stateDisplay = o.MetaData.CustomRegion
+			stateDisplay = o.MetaData.WooRegionEntrega // Tienda 3: WooComuna Pro
+		}
+		if stateDisplay == "" {
+			stateDisplay = o.MetaData.CustomRegion // Tienda 2: Custom Checkout
 		}
 		if stateDisplay == "" {
 			stateDisplay = o.Billing.State

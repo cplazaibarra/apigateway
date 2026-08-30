@@ -207,18 +207,34 @@ func (s *SyncService) ExecuteSync(ctx context.Context, integrationID, triggerTyp
 				custPhone, _ = billing["phone"].(string)
 			}
 
-			// Extract address: try meta_data first (Tienda 2 custom checkout plugin), then shipping
+			// Extract address: try meta_data first, checking all known plugin field names
 			var address, city, commune string
 			if meta, ok := gen["meta_data"].(map[string]interface{}); ok {
-				if v, ok := meta["custom_delivery_address"].(string); ok && v != "" {
+				// Tienda 3 - Plugin "WooComuna Pro" fields
+				if v, ok := meta["woo_direccion_completa"].(string); ok && v != "" {
 					address = v
 				}
-				if v, ok := meta["custom_commune"].(string); ok && v != "" {
+				if v, ok := meta["woo_barrio"].(string); ok && v != "" {
 					commune = v
 					city = v
 				}
-				if v, ok := meta["custom_region"].(string); ok && v != "" && city == "" {
+				if v, ok := meta["woo_region_entrega"].(string); ok && v != "" && city == "" {
 					city = v
+				}
+				// Tienda 2 - Plugin "Custom Checkout" fields (only if not already set)
+				if address == "" {
+					if v, ok := meta["custom_delivery_address"].(string); ok && v != "" {
+						address = v
+					}
+				}
+				if commune == "" {
+					if v, ok := meta["custom_commune"].(string); ok && v != "" {
+						commune = v
+						city = v
+					}
+					if v, ok := meta["custom_region"].(string); ok && v != "" && city == "" {
+						city = v
+					}
 				}
 			}
 			// Fallback to standard shipping fields if meta_data was empty
