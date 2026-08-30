@@ -611,13 +611,38 @@ import {
                 </div>
               </div>
 
-              <div *ngIf="samplePayload" class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-2">
-                <div class="text-xs font-bold text-slate-300 uppercase tracking-wider">Explorador de Claves del Payload Obtenido:</div>
-                <div class="font-mono text-xs text-slate-300 max-h-96 overflow-y-auto bg-slate-900 p-4 rounded-lg border border-slate-800 space-y-1.5">
-                  <div *ngFor="let item of flattenedSampleKeys" class="flex items-center justify-between py-1 border-b border-slate-800/40 hover:bg-slate-800/50 px-2 rounded">
-                    <span class="text-indigo-400 font-semibold">{{ item.path }}</span>
-                    <span class="text-slate-400 text-[11px] truncate max-w-lg">{{ item.value }}</span>
+              <div *ngIf="samplePayload" class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-sm space-y-0">
+                <div class="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">📋</span>
+                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Matriz de Claves y Valores del Payload de Origen</span>
                   </div>
+                  <span class="badge badge-primary text-[11px] font-mono">
+                    {{ flattenedSampleKeys.length }} nodos detectados
+                  </span>
+                </div>
+
+                <div class="table-container border-0 rounded-none bg-transparent max-h-[55vh] overflow-y-auto">
+                  <table class="w-full text-left">
+                    <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800 text-xs sticky top-0 z-10">
+                      <tr>
+                        <th class="w-1/2 p-3 font-bold uppercase text-slate-400">Ruta / Clave JSON (Source Path)</th>
+                        <th class="w-1/2 p-3 font-bold uppercase text-slate-400">Valor Extraído en Pedido de Muestra</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80 font-mono text-xs">
+                      <tr *ngFor="let item of flattenedSampleKeys" class="hover:bg-slate-900/50 transition">
+                        <td class="p-3 align-top">
+                          <span class="text-indigo-300 font-bold bg-slate-900 px-2 py-1 rounded border border-indigo-500/20 inline-block">
+                            {{ item.path }}
+                          </span>
+                        </td>
+                        <td class="p-3 align-top text-emerald-400 font-semibold break-all">
+                          {{ item.value }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
