@@ -55,6 +55,18 @@ import {
         </div>
 
         <div class="flex items-center flex-wrap gap-2.5">
+          <!-- Quick Version Selector Dropdown -->
+          <div *ngIf="versions().length > 0" class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1.5 rounded-lg shadow-sm">
+            <span class="text-xs text-indigo-400 font-bold">Versión:</span>
+            <select [ngModel]="mappingResult()?.current_version"
+                    (ngModelChange)="onQuickVersionChange($event)"
+                    class="form-select text-xs py-0.5 px-2 bg-slate-900 border-slate-700 text-slate-100 rounded font-mono font-bold focus:border-indigo-500">
+              <option *ngFor="let v of versions()" [value]="v.version">
+                v{{ v.version }} {{ v.version === mappingResult()?.current_version ? '(ACTUAL)' : '' }} - {{ v.description || 'Configuración' }}
+              </option>
+            </select>
+          </div>
+
           <button (click)="saveAllMappings()" [disabled]="savingMappings()" class="btn btn-success btn-sm flex items-center gap-1.5 px-4 py-2 font-bold shadow-sm">
             <span>💾</span> {{ savingMappings() ? 'Guardando...' : 'Guardar Mapeo' }}
           </button>
@@ -64,8 +76,8 @@ import {
           <button (click)="runValidationTest()" [disabled]="testingMapping() || !samplePayload" class="btn btn-secondary btn-sm flex items-center gap-1.5 px-4 py-2">
             <span>⚡</span> {{ testingMapping() ? 'Probando...' : 'Probar Pedido Canónico' }}
           </button>
-          <button (click)="showVersionModal = true" class="btn btn-secondary btn-sm flex items-center gap-1.5">
-            <span>🕒</span> Versiones ({{ versions().length }})
+          <button (click)="openVersionModal()" class="btn btn-secondary btn-sm flex items-center gap-1.5">
+            <span>🕒</span> Historial ({{ versions().length }})
           </button>
         </div>
       </div>
@@ -255,20 +267,37 @@ import {
             <button (click)="showVersionModal = false" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
           </div>
 
-          <div class="modal-body space-y-2">
-            <div *ngFor="let v of versions()" class="p-3 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between text-xs">
+          <div class="modal-body space-y-3">
+            <p class="text-xs text-slate-400">
+              Selecciona cualquier versión anterior para restaurar instantáneamente todas sus reglas de mapeo:
+            </p>
+
+            <div *ngFor="let v of versions()"
+                 class="p-3.5 rounded-xl border transition flex items-center justify-between gap-4"
+                 [ngClass]="v.version === mappingResult()?.current_version ? 'bg-indigo-950/40 border-indigo-500/60 ring-1 ring-indigo-500/40' : 'bg-slate-950 border-slate-800 hover:border-slate-700'">
               <div>
-                <div class="font-bold text-slate-200 flex items-center gap-2">
+                <div class="font-bold text-slate-100 flex items-center gap-2 text-sm">
                   <span>Versión {{ v.version }}</span>
-                  <span *ngIf="v.version === mappingResult()?.current_version" class="badge badge-primary text-[9px]">ACTUAL</span>
+                  <span *ngIf="v.version === mappingResult()?.current_version" class="badge badge-primary text-[10px] font-bold">
+                    ✓ EN USO ACTUALMENTE
+                  </span>
                 </div>
-                <div class="text-slate-400 text-[11px]">{{ v.description }}</div>
-                <div class="text-[10px] text-slate-500">{{ v.created_at | date:'dd/MM/yyyy HH:mm' }} por {{ v.created_by }}</div>
+                <div class="text-slate-300 text-xs mt-1">{{ v.description || 'Configuración guardada' }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5 font-mono">
+                  📅 {{ v.created_at | date:'dd/MM/yyyy HH:mm:ss' }} &nbsp;•&nbsp; 👤 {{ v.created_by }}
+                </div>
               </div>
 
-              <button *ngIf="v.version !== mappingResult()?.current_version" (click)="restoreVersion(v.version)" class="btn btn-secondary btn-sm text-xs">
-                ⏪ Restaurar
-              </button>
+              <div>
+                <button *ngIf="v.version !== mappingResult()?.current_version"
+                        (click)="restoreVersion(v.version)"
+                        class="btn btn-primary btn-sm text-xs font-bold px-3 py-1.5 flex items-center gap-1.5 shadow-sm">
+                  <span>⏪</span> Restaurar esta versión
+                </button>
+                <span *ngIf="v.version === mappingResult()?.current_version" class="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                  <span>🟢</span> Activa
+                </span>
+              </div>
             </div>
 
             <div *ngIf="versions().length === 0" class="text-center py-6 text-slate-500 text-xs">
@@ -594,13 +623,24 @@ export class DynamicMappingComponent implements OnInit {
     });
   }
 
+  openVersionModal() {
+    this.loadVersions();
+    this.showVersionModal = true;
+  }
+
+  onQuickVersionChange(version: number | string) {
+    const vNum = Number(version);
+    if (!vNum || vNum === this.mappingResult()?.current_version) return;
+    this.restoreVersion(vNum);
+  }
+
   restoreVersion(version: number) {
     this.api.restoreMappingVersion(this.integrationId, version).subscribe({
       next: (res: EffectiveMappingResult) => {
         this.mappingResult.set(res);
         this.activeMappings.set(res.mappings);
         this.showVersionModal = false;
-        this.toast.success(`Versión v${version} restaurada exitosamente`);
+        this.toast.success(`Versión v${version} activada y restaurada exitosamente`);
         if (this.samplePayload) {
           this.flattenSample(this.samplePayload);
         }
