@@ -49,20 +49,20 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
 
       <!-- Integrations Table -->
       <div class="card bg-slate-900 border-slate-800 p-0 overflow-hidden">
-        <div class="table-container border-0 rounded-none bg-transparent">
-          <table>
+        <div class="table-container border-0 rounded-none bg-transparent overflow-x-auto">
+          <table class="w-full min-w-[1100px]">
             <thead>
               <tr>
-                <th>Integración & Cliente</th>
+                <th class="w-64">Integración & Cliente</th>
                 <th>Proveedor</th>
                 <th>Endpoint Base & Auth</th>
                 <th>Ambiente</th>
                 <th>Estado</th>
-                <th>Polling Automático</th>
-                <th>Última Sincronización</th>
+                <th>Polling</th>
+                <th>Última Sync</th>
                 <th>Pedidos</th>
                 <th>Latencia</th>
-                <th class="text-right">Acciones</th>
+                <th class="text-right sticky right-0 bg-slate-900 z-10 shadow-l">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -159,11 +159,11 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   {{ it.avg_response_time_ms }} ms
                 </td>
 
-                <td class="text-right space-x-1.5 whitespace-nowrap">
+                <td class="text-right space-x-1.5 whitespace-nowrap sticky right-0 bg-slate-900 z-10 border-l border-slate-800">
                   <a [routerLink]="['/integrations', it.id, 'mapping']" class="btn btn-secondary btn-sm text-xs py-1 text-indigo-300 hover:text-indigo-200 border-indigo-500/30 inline-flex items-center gap-1" title="Configurar Mapeo Dinámico de Campos">
                     <span>🗺️</span> Mapeo
                   </a>
-                  <button *ngIf="auth.isOperator()" (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1 text-slate-200 hover:text-white border-slate-700 bg-slate-800 hover:bg-slate-700 inline-flex items-center gap-1" title="Editar configuración de la integración">
+                  <button (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1 text-slate-100 hover:text-white border-slate-600 bg-slate-800 hover:bg-slate-700 inline-flex items-center gap-1 font-semibold" title="Editar configuración de la integración">
                     <span>✏️</span> Editar
                   </button>
                   <button *ngIf="auth.isOperator()" (click)="testConnection(it)" class="btn btn-secondary btn-sm text-xs py-1" title="Probar conexión en vivo">
