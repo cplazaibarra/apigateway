@@ -163,6 +163,9 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   <a [routerLink]="['/integrations', it.id, 'mapping']" class="btn btn-secondary btn-sm text-xs py-1 text-indigo-300 hover:text-indigo-200 border-indigo-500/30 inline-flex items-center gap-1" title="Configurar Mapeo Dinámico de Campos">
                     <span>🗺️</span> Mapeo
                   </a>
+                  <button *ngIf="auth.isOperator()" (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1 text-slate-200 hover:text-white border-slate-700 bg-slate-800 hover:bg-slate-700 inline-flex items-center gap-1" title="Editar configuración de la integración">
+                    <span>✏️</span> Editar
+                  </button>
                   <button *ngIf="auth.isOperator()" (click)="testConnection(it)" class="btn btn-secondary btn-sm text-xs py-1" title="Probar conexión en vivo">
                     🔍 Probar
                   </button>
@@ -172,9 +175,6 @@ import { Integration, Customer, ProviderTestResult } from '../../core/models/typ
                   <a [routerLink]="['/logs']" [queryParams]="{integration_id: it.id}" class="btn btn-secondary btn-sm text-xs py-1" title="Ver logs">
                     📜 Logs
                   </a>
-                  <button *ngIf="auth.isAdmin()" (click)="openEditModal(it)" class="btn btn-secondary btn-sm text-xs py-1" title="Editar configuración">
-                    ✏️
-                  </button>
                   <button *ngIf="auth.isAdmin()" (click)="deleteIntegration(it)" class="btn btn-danger btn-sm text-xs py-1" title="Eliminar integración">
                     🗑️
                   </button>
